@@ -8,6 +8,7 @@
 
 - [`ICT_AUDIT_AR.md`](ICT_AUDIT_AR.md) — تدقيق الكود والمنهج.
 - [`ICT_TARGET_RESEARCH_AR.md`](ICT_TARGET_RESEARCH_AR.md) — البحث الأولي عن TP/partials و50% مقابل80%.
+- [`reports/HUMAN_TRADES_COMPARISON_AR.md`](reports/HUMAN_TRADES_COMPARISON_AR.md) — مقارنة 8 صفقات بشرية منشورة مع البوت.
 - [`HOW_IT_WORKS.md`](HOW_IT_WORKS.md) — دورة القرار والمتابعة.
 
 ## التثبيت

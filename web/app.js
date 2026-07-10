@@ -18,6 +18,7 @@ $$('.tab').forEach(btn=>btn.onclick=()=>{
   if(btn.dataset.tab==='trades')loadTrades();
   if(btn.dataset.tab==='account')loadAccount();
   if(btn.dataset.tab==='market')loadAgent();
+  if(btn.dataset.tab==='human')loadHumanComparison();
 });
 
 async function boot(){

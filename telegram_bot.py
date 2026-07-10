@@ -98,6 +98,8 @@ class TelegramBot:
             self.agent.stop(); return self.send(chat_id, "⏸ تم إيقاف تحليل السوق.")
         if text.startswith("/account"):
             return self.show_account(chat_id)
+        if text.startswith("/human"):
+            return self.show_human_comparison(chat_id)
         if text.startswith("/backtest"):
             return self.run_backtest(chat_id, text)
         if text.startswith("/platforms"):
@@ -111,8 +113,8 @@ class TelegramBot:
             "/analyze ETH/USDT okx 5m — تحليل 1D/4H/15m/5m من OKX\n"
             "/trades — الصفقات المتابعة\n/refresh — تحديثها كلها\n"
             "/market_on binance — تحليل السوق 24/7\n/market_off — إيقافه\n"
-            "/account — حساب المحاكاة $100\n"
-            "/backtest ETH/USDT 2026-06-10 2026-07-10 binance\n/platforms — المنصات\n\n"
+            "/account — حساب المحاكاة $100\n/human — مقارنة الصفقات البشرية\n"
+            "/backtest ETH/USDT 2026-06-10 2026-07-10 kucoin\n/platforms — المنصات\n\n"
             "الفريم الأخير فقط للتنفيذ (1m/3m/5m). كل الشموع مغلقة. Pending للمراقبة وليس أمراً.",
             [[{"text": "تحليل ETH الآن", "callback_data": "analyze:ETH/USDT:auto:5m"}],
              [{"text": "▶️ تحليل السوق 24/7", "callback_data": "market_on"}, {"text": "⏹ إيقاف", "callback_data": "market_off"}],
@@ -218,6 +220,25 @@ class TelegramBot:
                     f"الحالة: {trade['status']} | SL: {trade['current_stop_loss']} | المتبقي: {trade['remaining_pct']}%\n"
                     f"NY: {stamp.get('new_york', '')}\nدمشق: {stamp.get('damascus', '')}",
                 )
+
+    def show_human_comparison(self, chat_id):
+        path = os.path.join(os.path.dirname(__file__), "reports", "human_trade_comparison_baseline.json")
+        try:
+            data = json.load(open(path, encoding="utf-8"))
+            lines = [
+                f"📋 مقارنة {data['selected_count']} صفقات بشرية منشورة",
+                f"الإنسان: {data['human_wins']}W/{data['human_losses']}L | البوت: {data['bot_wins']}W/{data['bot_losses']}L | HOLD={data['bot_holds']} | No-fill={data['bot_no_fill']}",
+            ]
+            for x in data["rows"]:
+                lines.append(
+                    f"\n#{x['id']} {x['date']} {x['symbol']}\n"
+                    f"إنسان {x['human_outcome']} ({x['human_pnl_pct']}%)\n"
+                    f"بوت {x['bot_signal']} → {x['bot_outcome'] or x['stopped_at_gate']} ({x['bot_pnl_pct']}%)\n"
+                    f"{x['audit_comment_ar']}\n{x['source_url']}"
+                )
+            self.send(chat_id, "\n".join(lines))
+        except Exception as exc:
+            self.send(chat_id, f"❌ تعذر تحميل المقارنة: {exc}")
 
     def show_account(self, chat_id):
         self.paper.reconcile(self.monitor.list())

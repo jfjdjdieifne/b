@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Unified console: same capabilities as Desktop/Web/Telegram."""
 from __future__ import annotations
-import json, sys
+import json, os, sys
 
 
 def instant_analysis():
@@ -70,6 +70,19 @@ def run_backtest():
     print("حُفظ:",r['saved_to'])
 
 
+def human_comparison_view():
+    path=os.path.join(os.path.dirname(__file__),"reports","human_trade_comparison_baseline.json")
+    data=json.load(open(path,encoding="utf-8"))
+    print(f"\nالعينة: {data['selected_count']} | الإنسان {data['human_wins']}W/{data['human_losses']}L | "
+          f"البوت {data['bot_wins']}W/{data['bot_losses']}L | HOLD={data['bot_holds']} | No-fill={data['bot_no_fill']}")
+    print("-"*110)
+    for x in data['rows']:
+        print(f"#{x['id']} {x['date']} {x['symbol']}\n"
+              f"  إنسان: {x['human_bias']} | Entry={x['human_entry']} SL={x['human_sl']} TP={x['human_tp']} → {x['human_outcome']}\n"
+              f"  بوت: {x['bot_signal']} Entry={x['bot_entry']} SL={x['bot_sl']} TP={x['bot_tp']} → {x['bot_outcome'] or x['stopped_at_gate']}\n"
+              f"  {x['audit_comment_ar']}\n  المصدر: {x['source_url']}")
+
+
 def account_view():
     from paper_account import PaperAccount
     from trade_monitor import TradeMonitor
@@ -91,6 +104,7 @@ def main():
 6. 💵 حساب المحاكاة $100 واللوغ
 7. 🔄 تحديث الصفقات
 8. 🤖 Telegram
+9. 📋 مقارنة صفقات بشرية منشورة مع البوت
 0. خروج
 """)
         c=input("اختر: ").strip()
@@ -110,6 +124,7 @@ def main():
                 m=TradeMonitor();print(json.dumps(m.refresh_all(),ensure_ascii=False,indent=2,default=str));PaperAccount().reconcile(m.list())
             elif c=="8":
                 from telegram_bot import TelegramBot;return TelegramBot().run()
+            elif c=="9":human_comparison_view()
             elif c=="0":return
             else:print("خيار غير صحيح")
         except Exception as exc:print("❌",exc)

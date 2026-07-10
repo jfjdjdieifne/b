@@ -34,6 +34,7 @@
       <button class="tab active" data-tab="analysis">التحليل</button>
       <button class="tab" data-tab="market">تحليل السوق 24/7</button>
       <button class="tab" data-tab="backtest">اختبار فترة</button>
+      <button class="tab" data-tab="human">صفقات بشرية موثقة</button>
       <button class="tab" data-tab="trades">متابعة الصفقات <span id="tradeCount" class="count">0</span></button>
       <button class="tab" data-tab="account">الحساب التجريبي <span id="accountBalance" class="count">$100</span></button>
       <button class="tab" data-tab="guide">كيف يعمل؟</button>
@@ -92,6 +93,13 @@
       <div id="backtestResult"></div>
     </section>
 
+    <section id="humanTab" class="panel tab-panel">
+      <div class="section-head"><div><span class="eyebrow">GOOGLE-VERIFIED PUBLISHED SETUPS</span><h2>مقارنة الصفقات البشرية مع البوت</h2></div><button id="refreshHuman" class="ghost">عرض المقارنة</button></div>
+      <p class="muted">خطط بشرية منشورة قبل النتيجة مع رابط المصدر وEntry/SL/TP. النتيجة حُسبت لاحقاً من الشموع. تشغيل البوت هنا خط أساس مؤرشف قبل آخر الإصلاحات، وموسوم بوضوح حتى لا نخلطه بنتيجة HEAD الحالية.</p>
+      <div id="humanSummary" class="result-top"></div>
+      <div id="humanRows" class="trades-grid"></div>
+    </section>
+
     <section id="tradesTab" class="panel tab-panel">
       <div class="section-head"><div><span class="eyebrow">AUTO MONITOR</span><h2>الصفقات المتابعة</h2></div><button id="refreshTrades" class="ghost">تحديث الكل</button></div>
       <p class="muted">تحديث بضغطة واحدة: دخول ← TP1 يغلق النسبة المختارة وينقل الستوب للتعادل إن بقي Runner ← TP2 أو ملاحقة HL/LH. التطبيق لا يرسل أوامر مالية للمنصة.</p>
@@ -125,5 +133,6 @@
   <script src="/account.js"></script>
   <script src="/market.js"></script>
   <script src="/backtest.js"></script>
+  <script src="/human.js"></script>
 </body>
 </html>

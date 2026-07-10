@@ -85,6 +85,12 @@ class Handler(BaseHTTPRequestHandler):
             return self._json(200, {"ok": True, "journal": PAPER.journal_with_scenarios()})
         if path == "/api/agent":
             return self._json(200, {"ok": True, "agent": AGENT.status()})
+        if path == "/api/human-comparison":
+            comparison_path = ROOT / "reports" / "human_trade_comparison_baseline.json"
+            if not comparison_path.is_file():
+                return self._json(404, {"ok": False, "error_ar": "تقرير الصفقات البشرية غير موجود"})
+            with open(comparison_path, "r", encoding="utf-8") as f:
+                return self._json(200, {"ok": True, "comparison": json.load(f)})
         if path == "/api/backtests":
             folder = Path(Config.DATA_DIR) / "backtests"
             files = sorted(folder.glob("WFT-*.json"), key=lambda p: p.stat().st_mtime, reverse=True) if folder.exists() else []
