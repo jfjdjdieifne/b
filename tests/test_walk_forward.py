@@ -29,7 +29,7 @@ def test_trade_audit_bundle_contains_before_after_and_forensics(tmp_path):
     ohlc={"timestamps":[1000,2000],"close_timestamps":[1999,2999],
           "opens":[99,100],"highs":[101,111],"lows":[98,96],"closes":[100,110],
           "volumes":[1,1],"count":2}
-    trade={"entry_time":{"timestamp_ms":3999},"entry":100}
+    trade={"entry_time":{"timestamp_ms":3999},"entry":100,"realized_r":2.0,"net_pnl":2.0}
     outcome={"classification":"WIN_FULL","tp1_hit":True,"tp1_hit_time":4999,
              "tp1_price":110,"final_exit_reason":"TP2_HIT","final_exit_time":5999,
              "final_exit_price":120,"trail_history":[]}
@@ -47,3 +47,10 @@ def test_trade_audit_bundle_contains_before_after_and_forensics(tmp_path):
     comparison=compare_bundle(str(tmp_path),count=1)
     assert comparison["case_count"] == 1
     assert set(comparison["summary"]) == {"80_BE","50_BE","50_STRUCTURE","20_STRUCTURE_BIG_RUNNER"}
+    from backtest_forensics import generate_forensics
+    forensic=generate_forensics(str(tmp_path),{
+        "id":"WFT-X","trade_count":1,"win_rate":100,"return_pct":2,
+        "trades":[{"realized_r":2}],"equity_curve":[{"balance":100},{"balance":102}],
+    })
+    assert forensic["max_losing_streak"] == 0
+    assert forensic["best_five"][0]["case_id"] == "CASE-1"

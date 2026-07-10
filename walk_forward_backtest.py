@@ -303,6 +303,20 @@ class WalkForwardBacktester:
             with open(output_path,"w",encoding="utf-8") as f:
                 json.dump(report,f,ensure_ascii=False,indent=2,default=str)
         try:
+            from backtest_forensics import generate_forensics
+            forensic = generate_forensics(bundle_dir, report)
+            report["forensics"] = {
+                "max_drawdown_pct": forensic.get("max_drawdown_pct"),
+                "max_losing_streak": forensic.get("max_losing_streak"),
+                "cause_counts": forensic.get("cause_counts"),
+                "saved_to": forensic.get("saved_to"),
+            }
+            for output_path in (path, bundle_report_path):
+                with open(output_path,"w",encoding="utf-8") as f:
+                    json.dump(report,f,ensure_ascii=False,indent=2,default=str)
+        except Exception as exc:
+            report["forensics_error"] = str(exc)
+        try:
             shutil.make_archive(bundle_dir, "zip", bundle_dir)
         except OSError as exc:
             report["bundle_zip_error"] = str(exc)

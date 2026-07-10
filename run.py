@@ -73,6 +73,8 @@ def run_backtest():
     print("التقرير العام:",r['saved_to'])
     print("مجلد ملفات كل صفقة:",r.get('trade_cases_dir'))
     print("ملف مضغوط يحوي كل OHLC والتحليلات:",r.get('bundle_zip'))
+    if r.get('forensics'):
+        print("Forensics:",json.dumps(r['forensics'],ensure_ascii=False,indent=2))
     if r.get('trade_count',0) >= 5:
         from management_policy_comparison import compare_bundle
         comparison=compare_bundle(r['audit_bundle_dir'],count=5)
