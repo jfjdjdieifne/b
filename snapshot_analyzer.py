@@ -269,6 +269,20 @@ class SnapshotAnalyzer:
         ]
         ltf_confirmed = bool(aligned_recent)
         current = entry["closes"][-1]
+        is_long = "BUY" in side
+        # A pending target already behind current market has already been
+        # delivered. Keeping it creates the TARGET_REACHED_WITHOUT_ENTRY loop.
+        target_still_ahead = (
+            tp1 > max(entry_price, current) if is_long
+            else tp1 < min(entry_price, current)
+        )
+        if not target_still_ahead:
+            return None
+        # Correct order semantics: pullbacks use LIMIT; breakout entries use STOP.
+        if is_long:
+            side = "BUY_LIMIT" if entry_price <= current else "BUY_STOP"
+        else:
+            side = "SELL_LIMIT" if entry_price >= current else "SELL_STOP"
         zone_tolerance = max(entry_price * 0.0005, risk_per_unit * 0.1)
         price_at_zone = abs(current - entry_price) <= zone_tolerance
         timing_ok = bool(session.get("is_executable_window"))

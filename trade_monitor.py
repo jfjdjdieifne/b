@@ -60,8 +60,8 @@ class TradeMonitor:
         if missing:
             raise ValueError(f"حقول ناقصة للتتبع: {', '.join(missing)}")
         side = str(payload["side"]).upper()
-        if side not in ("BUY", "SELL", "BUY_LIMIT", "SELL_LIMIT"):
-            raise ValueError("الاتجاه يجب أن يكون BUY/SELL/BUY_LIMIT/SELL_LIMIT")
+        if side not in ("BUY", "SELL", "BUY_LIMIT", "SELL_LIMIT", "BUY_STOP", "SELL_STOP"):
+            raise ValueError("الاتجاه يجب أن يكون BUY/SELL أو LIMIT/STOP صحيح")
         entry = parse_price(payload["entry"])
         sl = parse_price(payload["stop_loss"])
         tp1 = parse_price(payload["tp1"])

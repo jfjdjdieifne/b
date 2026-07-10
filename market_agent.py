@@ -212,10 +212,17 @@ class MarketAgent:
     def _record_tombstone(self, trade, reason):
         key = f"{trade['symbol']}:{trade.get('model') or 'UNKNOWN'}"
         now_ms = dual_time()["timestamp_ms"]
-        self.state.setdefault("tombstones", {})[key] = {
+        tombstones = self.state.setdefault("tombstones", {})
+        record = {
             **self._fingerprint_values(trade.get("model"), trade["entry"], trade["initial_stop_loss"]),
             "reason": reason, "trade_id": trade["id"], "recorded_at_ms": now_ms,
             "cooldown_until_ms": now_ms + 6 * 60 * 60 * 1000,
+        }
+        tombstones[key] = record
+        # Also cool down the symbol across models for one hour. A model label
+        # changing five minutes later is not automatically a new market thesis.
+        tombstones[f"{trade['symbol']}:*"] = {
+            **record, "cooldown_until_ms": now_ms + 60 * 60 * 1000,
         }
 
     def _sync_tombstones(self):
@@ -229,17 +236,19 @@ class MarketAgent:
                 self._record_tombstone(trade, last_event.get("detail_ar") or trade["status"])
 
     def _can_rearm(self, symbol, candidate):
+        tombstones = self.state.setdefault("tombstones", {})
+        now_ms = dual_time()["timestamp_ms"]
+        symbol_tomb = tombstones.get(f"{symbol}:*")
+        if symbol_tomb and now_ms < int(symbol_tomb.get("cooldown_until_ms", 0)):
+            return False
         key = f"{symbol}:{candidate.get('model') or 'UNKNOWN'}"
-        tomb = self.state.setdefault("tombstones", {}).get(key)
+        tomb = tombstones.get(key)
         if not tomb:
             return True
-        now_ms = dual_time()["timestamp_ms"]
         if now_ms < int(tomb.get("cooldown_until_ms", 0)):
             return False
         entry_drift = abs(float(candidate["entry"]) - float(tomb["entry"])) / max(abs(float(candidate["entry"])), 1e-9)
         stop_drift = abs(float(candidate["stop_loss"]) - float(tomb["stop"])) / max(abs(float(candidate["stop_loss"])), 1e-9)
-        # After cooldown, demand a genuinely new price thesis rather than the
-        # same rounded zone being rediscovered every five minutes.
         return max(entry_drift, stop_drift) >= 0.003
 
     def _event(self, kind, symbol, audit_id=None):

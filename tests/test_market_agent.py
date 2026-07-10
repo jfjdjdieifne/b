@@ -16,3 +16,5 @@ def test_same_thesis_cannot_rearm_every_five_minutes(tmp_path):
     agent._record_tombstone(trade, "target reached without entry")
     same = {"model": "MODEL_C_BOS_PULLBACK", "entry": 1750.2, "stop_loss": 1740.1}
     assert agent._can_rearm("ETH/USDT", same) is False
+    different_model = {"model": "MODEL_B_SWEEP_FVG", "entry": 1800, "stop_loss": 1780}
+    assert agent._can_rearm("ETH/USDT", different_model) is False
