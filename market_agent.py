@@ -31,6 +31,8 @@ class MarketAgent:
         self._stop = threading.Event()
         self._thread = None
         self.state = self._load_state()
+        self.state.setdefault("tombstones", {})
+        self.state.setdefault("blocked_rearms", 0)
 
     def _load_state(self):
         try:
@@ -105,6 +107,7 @@ class MarketAgent:
 
     def run_once(self):
         self.monitor.refresh_all()
+        self._sync_tombstones()
         self.paper.reconcile(self.monitor.list())
         universe = self.dm.get_market_universe(
             self.state["exchange"], self.state["universe_size"]
@@ -137,6 +140,7 @@ class MarketAgent:
             except Exception as exc:
                 cycle_results.append({"symbol": symbol, "ok": False, "error": str(exc), "time": dual_time()})
         self.monitor.refresh_all()
+        self._sync_tombstones()
         self.paper.reconcile(self.monitor.list())
         self.state["cycle"] = int(self.state.get("cycle", 0)) + 1
         self.state["last_cycle"] = dual_time()
@@ -156,7 +160,9 @@ class MarketAgent:
         if not candidate:
             for trade in existing:
                 if trade["status"] in ("watchlist", "pending_entry"):
-                    self.monitor.invalidate(trade["id"], "إعادة التحليل لم تعد تجد نموذجاً صالحاً")
+                    reason = "إعادة التحليل لم تعد تجد نموذجاً صالحاً"
+                    self.monitor.invalidate(trade["id"], reason)
+                    self._record_tombstone(trade, reason)
             return
 
         same = next((t for t in existing if t.get("model") == candidate["model"]), None)
@@ -165,8 +171,15 @@ class MarketAgent:
             drift = abs(same["entry"] - candidate["entry"]) / candidate["entry"]
             if drift > 0.001 or same["initial_stop_loss"] != candidate["stop_loss"]:
                 if same["status"] in ("watchlist", "pending_entry"):
-                    self.monitor.invalidate(same["id"], "تغيرت منطقة/إبطال النموذج مادياً عند إعادة التحليل")
+                    reason = "تغيرت منطقة/إبطال النموذج مادياً عند إعادة التحليل"
+                    self.monitor.invalidate(same["id"], reason)
+                    self._record_tombstone(same, reason)
                     same = None
+
+        if not same and not existing and not self._can_rearm(symbol, candidate):
+            self.state["blocked_rearms"] = int(self.state.get("blocked_rearms", 0)) + 1
+            self._event("REARM_BLOCKED_BY_COOLDOWN", symbol, analysis["audit_id"])
+            return
 
         if decision == "READY_NOW":
             account = self.paper.snapshot()
@@ -191,6 +204,43 @@ class MarketAgent:
             trade = self.monitor.add(payload)
             self.paper.register_plan(trade, analysis, auto=True)
             self._event("AUTO_WATCHLIST", symbol, analysis["audit_id"])
+
+    @staticmethod
+    def _fingerprint_values(model, entry, stop):
+        return {"model": model, "entry": round(float(entry), 6), "stop": round(float(stop), 6)}
+
+    def _record_tombstone(self, trade, reason):
+        key = f"{trade['symbol']}:{trade.get('model') or 'UNKNOWN'}"
+        now_ms = dual_time()["timestamp_ms"]
+        self.state.setdefault("tombstones", {})[key] = {
+            **self._fingerprint_values(trade.get("model"), trade["entry"], trade["initial_stop_loss"]),
+            "reason": reason, "trade_id": trade["id"], "recorded_at_ms": now_ms,
+            "cooldown_until_ms": now_ms + 6 * 60 * 60 * 1000,
+        }
+
+    def _sync_tombstones(self):
+        for trade in self.monitor.list():
+            if trade.get("status") not in ("invalidated", "expired"):
+                continue
+            key = f"{trade['symbol']}:{trade.get('model') or 'UNKNOWN'}"
+            current = self.state.setdefault("tombstones", {}).get(key)
+            if not current or current.get("trade_id") != trade["id"]:
+                last_event = (trade.get("events") or [{}])[-1]
+                self._record_tombstone(trade, last_event.get("detail_ar") or trade["status"])
+
+    def _can_rearm(self, symbol, candidate):
+        key = f"{symbol}:{candidate.get('model') or 'UNKNOWN'}"
+        tomb = self.state.setdefault("tombstones", {}).get(key)
+        if not tomb:
+            return True
+        now_ms = dual_time()["timestamp_ms"]
+        if now_ms < int(tomb.get("cooldown_until_ms", 0)):
+            return False
+        entry_drift = abs(float(candidate["entry"]) - float(tomb["entry"])) / max(abs(float(candidate["entry"])), 1e-9)
+        stop_drift = abs(float(candidate["stop_loss"]) - float(tomb["stop"])) / max(abs(float(candidate["stop_loss"])), 1e-9)
+        # After cooldown, demand a genuinely new price thesis rather than the
+        # same rounded zone being rediscovered every five minutes.
+        return max(entry_drift, stop_drift) >= 0.003
 
     def _event(self, kind, symbol, audit_id=None):
         self.state.setdefault("events", []).append({

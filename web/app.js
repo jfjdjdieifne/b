@@ -54,6 +54,7 @@ function renderAnalysis(a){
   }
   h+=`<div class="frames">${['1d','4h','15m',a.execution_timeframe].map(tf=>renderFrame(a.frames[tf])).join('')}</div>`;
   h+=`<div class="model-table"><div class="model-row"><b>النموذج</b><b>الحالة</b><b>السبب المختصر</b></div>${(a.entry_models||[]).map(m=>`<div class="model-row"><span>${esc(m.model)}</span><span class="${m.status==='READY'?'bull':m.status==='PENDING_SETUP'?'warn':'bear'}">${esc(m.status)}</span><span>${m.failed?.length?'فشل: '+esc(m.failed.join(', ')):m.pending?.length?'بانتظار: '+esc(m.pending.join(', ')):'كل الشروط محسومة'}</span></div>`).join('')}</div>`;
+  h+=`<details class="frame-card" style="margin-top:12px"><summary><div class="frame-title"><span class="tf">AUDIT</span><div><h4>فصفصة القرار خطوة بخطوة</h4><div class="role">المدخلات، الناتج، وأساس كل تصنيف</div></div></div></summary><pre style="white-space:pre-wrap;color:#9fb1c0;font-size:10px;direction:ltr;text-align:left">${esc(JSON.stringify(a.decision_trace||[],null,2))}</pre></details>`;
   h+=`<p class="muted">جلسة نيويورك: <b>${esc(a.session.session)}</b> • نافذة تنفيذ: ${a.session.is_executable_window?'نعم':'لا'} • كل الحسابات على شموع مغلقة فقط.</p>`;
   $('#analysisResult').innerHTML=h;
   if(cand)$('#trackCandidate').onclick=trackCandidate;

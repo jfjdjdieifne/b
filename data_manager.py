@@ -658,6 +658,29 @@ class DataManager:
                 cursor = next_cursor
                 if len(payload) < 1000: break
                 time.sleep(0.08)
+        elif exchange == "kucoin":
+            ktype = self._convert_tf_kucoin(timeframe)
+            start_sec, end_cursor = start_ms // 1000, end_ms // 1000
+            while end_cursor >= start_sec:
+                resp = self.session.get(
+                    f"{self.kucoin_base}/api/v1/market/candles",
+                    params={"symbol": self._dash_symbol(symbol), "type": ktype,
+                            "startAt": start_sec, "endAt": end_cursor}, timeout=20,
+                )
+                payload = self._json_or_error(resp, "KuCoin")
+                if payload.get("code") != "200000":
+                    raise DataManagerError(f"KuCoin: {payload.get('msg') or payload.get('code')}")
+                batch = payload.get("data") or []
+                if not batch: break
+                for x in batch:
+                    ts = int(float(x[0]) * 1000)
+                    if start_ms <= ts <= end_ms:
+                        rows.append({"ts": ts, "o": x[1], "c": x[2], "h": x[3], "l": x[4], "v": x[5]})
+                oldest = min(int(float(x[0])) for x in batch)
+                if oldest <= start_sec: break
+                if oldest >= end_cursor: break
+                end_cursor = oldest - 1
+                time.sleep(0.08)
         elif exchange == "okx":
             after = end_ms + self.TF_SECONDS[timeframe] * 1000
             bar = self._convert_tf_okx(timeframe)
@@ -682,7 +705,7 @@ class DataManager:
                 time.sleep(0.1)
         else:
             raise DataManagerError(
-                f"الباك تست الزمني يدعم حالياً Binance وMEXC وOKX، وليس {exchange}. لا تبديل صامت."
+                f"الباك تست الزمني يدعم Binance وMEXC وKuCoin وOKX، وليس {exchange}. لا تبديل صامت."
             )
         data = self._finalize_rows(rows, symbol, timeframe, exchange, 0, True)
         if not data: return None

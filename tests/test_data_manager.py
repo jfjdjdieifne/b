@@ -55,6 +55,21 @@ def test_multi_timeframe_pins_resolved_exchange(monkeypatch):
     assert all(call[2] is False for call in calls[1:])
 
 
+def test_kucoin_historical_paginates_backward(monkeypatch):
+    dm = DataManager()
+    pages = [
+        [["300","1","2","3","0.5","10","20"],["200","1","2","3","0.5","10","20"]],
+        [["150","1","2","3","0.5","10","20"],["100","1","2","3","0.5","10","20"]],
+    ]
+    class Response:
+        status_code=200
+        def __init__(self,data): self.data=data
+        def json(self): return {"code":"200000","data":self.data}
+    monkeypatch.setattr(dm.session,"get",lambda *a,**k: Response(pages.pop(0)))
+    data=dm.get_historical_ohlcv("ETH/USDT","1m",100_000,300_000,"kucoin")
+    assert data["timestamps"] == [100_000,150_000,200_000,300_000]
+
+
 def test_explicit_exchange_does_not_fallback(monkeypatch):
     dm = DataManager()
     called = []

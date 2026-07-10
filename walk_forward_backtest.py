@@ -6,6 +6,7 @@ import bisect
 import json
 import os
 import uuid
+from collections import Counter
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
@@ -90,6 +91,8 @@ class WalkForwardBacktester:
         stride = {"5m": 3, "3m": 5, "1m": 15}[tf]  # one decision checkpoint per 15m
 
         trades, signals, no_fills, checkpoints = [], 0, 0, 0
+        decision_counts, bias_counts = Counter(), Counter()
+        model_status_counts, rejection_reasons = Counter(), Counter()
         equity_curve = [{"time": dual_time(start_ms), "balance": balance}]
         i = start_i
         while i < end_i:
@@ -101,6 +104,15 @@ class WalkForwardBacktester:
             hist_dm.cutoff = cutoff
             checkpoints += 1
             result = analyzer.analyze(symbol, exchange, tf, balance, risk_pct, tp1_allocation_pct)
+            if result.get("ok"):
+                decision_counts[result.get("decision", {}).get("state", "UNKNOWN")] += 1
+                bias_counts[result.get("bias", {}).get("state", "UNKNOWN")] += 1
+                for model in result.get("entry_models", []):
+                    model_status_counts[f"{model.get('model')}:{model.get('status')}"] += 1
+                    for reason in model.get("failed", []): rejection_reasons[f"FAILED:{reason}"] += 1
+                    for reason in model.get("pending", []): rejection_reasons[f"PENDING:{reason}"] += 1
+            else:
+                decision_counts["DATA_ERROR"] += 1
             candidate = result.get("candidate") if result.get("ok") else None
             if not candidate or result["decision"]["state"] != "READY_NOW":
                 i += 1; continue
@@ -171,6 +183,9 @@ class WalkForwardBacktester:
             "fee_bps_each_side": float(fee_bps),
             "slippage_bps_each_side": float(slippage_bps), "checkpoints": checkpoints,
             "signals": signals, "no_fills": no_fills, "trades": trades,
+            "decision_counts": dict(decision_counts), "bias_state_counts": dict(bias_counts),
+            "model_status_counts": dict(model_status_counts),
+            "top_rejection_reasons": dict(rejection_reasons.most_common(30)),
             "trade_count": len(trades), "wins": wins, "losses": losses,
             "win_rate": round(wins/len(trades)*100,2) if trades else None,
             "average_r": round(sum(t["realized_r"] for t in trades)/len(trades),3) if trades else None,

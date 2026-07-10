@@ -176,6 +176,9 @@ class SnapshotAnalyzer:
             "candidate": candidate,
             "decision": decision,
             "expectation": self._expectation(candidate, bias, entry["closes"][-1]),
+            "decision_trace": self._decision_trace(
+                frame_reports, bias, bias_state, session, model_result, candidate
+            ),
             "data_fetch_reports": reports,
             "limitations_ar": [
                 "النتيجة تحليل تقني آلي وليست ضماناً ولا نصيحة مالية.",
@@ -354,6 +357,47 @@ class SnapshotAnalyzer:
                 "status": "watchlist" if state != "READY_NOW" else "pending_entry",
             },
         }
+
+    @staticmethod
+    def _decision_trace(frames, bias, bias_state, session, model_result, candidate):
+        trace = []
+        for tf, frame in frames.items():
+            anchor = frame.get("bias_anchor", {})
+            trace.append({
+                "step": f"DATA_AND_STRUCTURE_{tf}",
+                "input": {"source": frame.get("source"), "candles": frame.get("candles"),
+                          "last_close": frame.get("last_close")},
+                "output": {"anchor": anchor.get("anchor_direction"), "strength": anchor.get("strength"),
+                           "last_breaks": frame.get("latest_structural_breaks"),
+                           "displacement": frame.get("latest_displacement")},
+                "basis": "closed OHLC candles only; every break includes level/index/displacement flag",
+            })
+        trace.append({
+            "step": "HTF_BIAS_CROSSCHECK",
+            "input": {"daily": frames["1d"]["bias_anchor"], "h4": frames["4h"]["bias_anchor"]},
+            "output": {"bias": bias, "state": bias_state},
+            "basis": "directional plan requires Daily/H4 agreement; mixed context is disclosed",
+        })
+        trace.append({
+            "step": "TIME_GATE", "input": session.get("timestamp"),
+            "output": {"session": session.get("session"), "eligible": session.get("is_executable_window")},
+            "basis": "configured time-model window; clock alone is never an entry",
+        })
+        for model in (model_result or {}).get("all_models", []):
+            trace.append({
+                "step": model.get("model"), "output": model.get("status"),
+                "conditions": model.get("conditions", []),
+                "basis": "named model conditions evaluated independently; no generic fallback trade",
+            })
+        if candidate:
+            trace.append({
+                "step": "PLAN_AND_TARGETS",
+                "input": {"entry": candidate.get("entry"), "stop": candidate.get("stop_loss")},
+                "output": {"targets": candidate.get("targets"), "runner": candidate.get("runner"),
+                           "lifecycle": candidate.get("lifecycle")},
+                "basis": "TP1 active unswept level; TP2 needs confluence + horizon compatibility",
+            })
+        return trace
 
     @staticmethod
     def _expectation(candidate, bias, current_price):
