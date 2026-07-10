@@ -67,7 +67,9 @@ def run_backtest():
     if r.get('zero_trade_diagnosis'):
         print("🚨 تشخيص صفر صفقات:",json.dumps(r['zero_trade_diagnosis'],ensure_ascii=False,indent=2))
     print("أكثر أسباب الرفض:",json.dumps(r.get('top_rejection_reasons',{}),ensure_ascii=False,indent=2))
-    print("حُفظ:",r['saved_to'])
+    print("التقرير العام:",r['saved_to'])
+    print("مجلد ملفات كل صفقة:",r.get('trade_cases_dir'))
+    print("ملف مضغوط يحوي كل OHLC والتحليلات:",r.get('bundle_zip'))
 
 
 def human_comparison_view():
@@ -91,6 +93,13 @@ def account_view():
 
 
 def main():
+    import subprocess
+    try:
+        commit=subprocess.check_output(["git","rev-parse","--short","HEAD"],text=True,
+                                       stderr=subprocess.DEVNULL).strip()
+    except Exception:
+        commit="unknown"
+    print(f"ملف التشغيل: {os.path.abspath(__file__)} | Git: {commit}")
     while True:
         print("""
 ╔════════════════════════════════════════════════════════════╗

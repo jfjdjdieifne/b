@@ -96,16 +96,19 @@ class Handler(BaseHTTPRequestHandler):
             files = sorted(folder.glob("WFT-*.json"), key=lambda p: p.stat().st_mtime, reverse=True) if folder.exists() else []
             return self._json(200, {"ok": True, "reports": [p.stem for p in files]})
         if path.startswith("/api/backtests/"):
-            report_id = path.rsplit("/", 1)[-1]
+            parts = [p for p in path.split("/") if p]
+            report_id = parts[2] if len(parts) >= 3 else ""
+            wants_bundle = len(parts) == 4 and parts[3] == "bundle"
             if not report_id.startswith("WFT-") or not report_id.replace("-", "").isalnum():
                 return self._json(400, {"ok": False, "error_ar": "معرف تقرير غير صالح"})
-            report_path = Path(Config.DATA_DIR) / "backtests" / f"{report_id}.json"
+            suffix = ".zip" if wants_bundle else ".json"
+            report_path = Path(Config.DATA_DIR) / "backtests" / f"{report_id}{suffix}"
             if not report_path.is_file():
                 return self._json(404, {"ok": False, "error_ar": "التقرير غير موجود"})
             body = report_path.read_bytes()
             self.send_response(200)
-            self.send_header("Content-Type", "application/json; charset=utf-8")
-            self.send_header("Content-Disposition", f'attachment; filename="{report_id}.json"')
+            self.send_header("Content-Type", "application/zip" if wants_bundle else "application/json; charset=utf-8")
+            self.send_header("Content-Disposition", f'attachment; filename="{report_id}{suffix}"')
             self.send_header("Content-Length", str(len(body)))
             self.end_headers(); self.wfile.write(body); return
         return self._serve_static(path)

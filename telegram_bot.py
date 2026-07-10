@@ -276,6 +276,7 @@ class TelegramBot:
                 f"الرصيد: ${r['initial_balance']} → ${r['final_balance']}\n"
                 f"الصافي: ${r['net_pnl']} ({r['return_pct']}%) | متوسط {r['average_r']}R\n"
                 f"Signals={r['signals']} | No fills={r['no_fills']}\n"
+                f"ملفات التدقيق: {r.get('bundle_zip')}\n"
                 "⚠️ نتيجة افتراضية وليست ضماناً للأداء المستقبلي.")
         except Exception as exc:
             self.send(chat_id, f"❌ فشل الاختبار: {exc}")

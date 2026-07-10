@@ -107,6 +107,8 @@ TP2 لا يظهر إذا كان بعيداً بشكل غير متوافق مع �
 
 ## اختبار فترة بلا غش
 
+> إذا ظهر لك عنوان `ICT Algo Master` أو كلمات `진행`/`יו`, فأنت لا تشغّل `main.py` الموجود بهذا الفرع؛ هذه العبارات غير موجودة بالمشروع. الكونسول الصحيح يطبع أولاً مسار `run.py` وGit commit حتى تتأكد من النسخة.
+
 زر **اختبار فترة** يدعم KuCoin/Binance/MEXC/OKX:
 
 - كل تحليل يحصل فقط على candles ذات `close_time <= cutoff`.
@@ -120,6 +122,30 @@ TP2 لا يظهر إذا كان بعيداً بشكل غير متوافق مع �
 - التقرير الكامل يُحفظ في `data/backtests/`.
 
 النتيجة افتراضية وليست دليلاً على أداء مستقبلي.
+
+### ملف مستقل لكل صفقة/إشارة
+
+كل `ORDER_READY/READY_NOW` يحصل على مجلد قضية داخل:
+
+```text
+data/backtests/WFT-.../trade_cases/CASE-.../
+```
+
+وفيه:
+
+```text
+00_manifest.json                         الهوية وGit commit وSHA256
+01_analysis_at_signal.json               التحليل الكامل قبل كشف المستقبل
+02_ohlc_before_signal_5m.json            شموع التنفيذ التي رآها
+02_ohlc_before_signal_15m.json           شموع 15m
+02_ohlc_before_signal_4h.json            شموع 4H
+02_ohlc_before_signal_1d.json            شموع Daily
+03_ohlc_after_signal_execution_tf.json   الشموع اللاحقة مفصولة
+04_outcome_and_management.json           Entry/TP1/trailing/exit وتشخيص الربح/الخسارة
+README_AR.md                              شرح القضية بالعربي
+```
+
+ويُنشأ ZIP واحد يحوي كل القضايا. تشخيص الخسارة يبين MFE/MAE بوحدة R وهل ضُرب SL ثم وصل TP1 خلال 24 ساعة، وهي قرينة على SL ضيق وليست حكماً قطعياً.
 
 للتدقيق الجاهز لآخر 30 يوماً على خمسة أزواج سائلة عبر KuCoin:
 
