@@ -1,0 +1,1817 @@
+{
+  "report_type": "ARCHIVED_NO_LOOKAHEAD_BOT_BASELINE_VS_GOOGLE_VERIFIED_HUMAN_SETUPS",
+  "important_limitations": [
+    "Bot outputs are archived pre-fix MultiPass runs, not a rerun of commit HEAD.",
+    "Sources verify publication date and levels; some exact intraday timestamps came from archived collection and are not independently visible on the page.",
+    "human_dollar_pnl_on_100 and bot_dollar_pnl_on_100 are raw unlevered price-change illustrations, not the new 1%-risk paper account."
+  ],
+  "selected_count": 8,
+  "human_wins": 4,
+  "human_losses": 3,
+  "human_other": 1,
+  "bot_directional_signals": 5,
+  "bot_holds": 3,
+  "bot_executed_outcomes": 4,
+  "bot_wins": 1,
+  "bot_losses": 3,
+  "bot_no_fill": 1,
+  "raw_human_price_pnl_sum_on_100": 7.33,
+  "raw_bot_price_pnl_sum_on_100": 2.8,
+  "rows": [
+    {
+      "id": 3,
+      "symbol": "BTC/USDT",
+      "date": "2026-04-22",
+      "human_bias": "LONG (cautious)",
+      "human_entry": [
+        76800,
+        78000
+      ],
+      "human_sl": 73500,
+      "human_tp": [
+        80000,
+        83312
+      ],
+      "human_outcome": "TP_HIT(80000)",
+      "human_pnl_pct": 3.359,
+      "bot_signal": "BUY",
+      "bot_confidence": 62,
+      "bot_entry": 75500.0,
+      "bot_sl": 74700.0,
+      "bot_tp": 79462.0,
+      "bot_rr": "4.9:1",
+      "bot_outcome": "TP_HIT",
+      "bot_pnl_pct": 5.248,
+      "stopped_at_gate": null,
+      "market_dir_10d": "NEUTRAL",
+      "market_pct_10d": -0.11,
+      "bot_dollar_pnl_on_100": 5.25,
+      "human_dollar_pnl_on_100": 3.36,
+      "source_url": "https://www.capitalstreetfx.com/trade-idea/bitcoin-btc-usd-trade-idea-april-22-2026/",
+      "source_time_quality": "date verified; 12:00 UTC comes from archived collection, not page metadata",
+      "audit_comment_ar": "اتجاه متفق وربح الطرفين، لكن قرار البوت القديم كان projected BUY بلا نموذج دخول مكتمل؛ مسار اليوم سيعامله ORDER/WATCH حسب التأكيد.",
+      "bot_analysis_detail": {
+        "analysis_method": "multi_pass_topdown_ict",
+        "stages_completed": 5,
+        "stopped_at_gate": null,
+        "narrative": "BTC is in a confirmed bullish trend on Weekly and Daily timeframes. However, on the 4H and 1H (entry TF), price has rallied into premium (above EQ ~77,112) and is stalling at a weak 4H bearish OB (78,010-78,399) with no pullback yet to the major demand zone at 74.8K-76.2K (Daily OB + 4H OB + FVG overlap). The 1H structure remains bullish but shows no CHoCH/MSS at a valid HTF zone — the last candle is a small bullish candle (body_pct 45.6%, no displacement) making a marginal higher high. This is a 'wait for pullback' scenario, not an entry scenario. The Daily Bias (commander) says BUY direction, but the tactical timeframes say NOT NOW.",
+        "reasoning": "BACKTEST MODE FORCED SIGNAL: Daily Bias is BULLISH (commander) so direction is BUY. However, NO Entry Model conditions are met at current price (78,299): Model A requires price at OTE/OB zone — price is in premium at resistance. Model B requires liquidity sweep + FVG at zone — sweep at 78210 was continuation, not reversal, and no FVG at demand. Model C requires BOS pullback to OB — pullback hasn't happened yet. Model D/E/F require specific session/setups not present. The 'entry' 75500 represents the MIDPOINT of the 74.8K-76.2K demand overlap zone (Daily OB 74,826-75,026 + 4H OB + FVG). SL 74700 is below the 4H OB bottom (74,826) and swing low (74,825.6) with buffer. TP 79462 is the Weekly High / Major BSL (ERL target). R:R = (79462-75500)/(75500-74700) = 3962/800 = 4.95:1. This is a PROJECTED setup — not currently actionable. Real entry requires price to reach ~75500 AND 1H CHoCH/MSS confirmation there.",
+        "cross_reference_check": "Weekly: BULLISH (moderate). Daily: BULLISH (75% confidence, HH/HL sequence intact, BOS confirmed). 4H: PULLBACK within bullish trend (MMM Phase 4, price in premium near 4H bearish OB, needs pullback to 74.8K-76.2K zone). 1H: BULLISH structure intact but NO entry signal (price at premium, no CHoCH/MSS at HTF zone). CONFLICT: Daily/Weekly bias is BULLISH but 4H/1H show price is extended in premium at resistance (4H bearish OB 78,010-78,399) with NO pullback to the demand zone yet. RESOLUTION: The higher timeframes command the DIRECTION (bullish) but the lower timeframes dictate TIMING (not yet). Entry must wait for pullback to the 74.8K-76.2K overlap zone (Daily OB + 4H OB + FVG) and 1H CHoCH/MSS there. Current location is invalid for entry per all models.",
+        "structural_derivation": "Causal chain from pre-computed data: Last genuine BOS (UP) occurred at candle idx -10 (close 77605.2 > prior swing high 75917.2). The Order Block responsible is candle idx -11 (BEARISH_OB, range 76301.0-76369.6). This same displacement created a BULLISH_FVG at 76427.2-77371.9 (idx -3 to -1). chain_coherent=False — the recent liquidity sweep at 78210.0 (idx -1) is NOT linked to this OB/FVG/BOS sequence; they are separate events. The current 4H bearish OB at idx -1 (78,010-78,399) is a new, weak structure (impulse ratio 1.1) forming at highs, unrelated to the prior bullish impulse.",
+        "archetype": "BULLISH_TREND_PULLBACK_REQUIRED",
+        "bos_reconciliation": "Daily Bias is BULLISH (commander). Entry TF (1H) shows bullish structure (HH/HL) but price is at premium resistance with NO structural shift at a demand zone. The 1H BOS at idx -10 (77605.2) was valid but price has since extended 700+ points without meaningful pullback. Current 1H candle idx -1 does NOT show CHoCH/MSS at the 74.8K-76.2K zone — it shows continuation at resistance. No contradiction in DIRECTION, only in TIMING. The trade thesis remains bullish but entry is deferred until price reaches the HTF demand zone and 1H confirms with CHoCH/MSS.",
+        "confluence_factors": [
+          "Weekly BULLISH trend (HH/HL sequence from $60K)",
+          "Daily BULLISH bias (75% confidence, BOS confirmed, HH/HL intact)",
+          "Daily OB at 74,826-75,026 (fresh, impulse ratio 4.2)",
+          "4H Bullish OB at 74,826-75,026 (same zone, BOS confirmed)",
+          "Bullish FVG overlap at 76,330-77,744 (fresh, 1.8%)",
+          "Major BSL / ERL target at $79,462 (Weekly high)",
+          "SMT divergence supports bullish (ETH lower low, BTC higher low)"
+        ],
+        "risks": [
+          "Price currently at 78,299 — 2,800 points ABOVE projected entry (75,500)",
+          "No pullback yet — price may extend higher before correcting (trend continuation)",
+          "4H Bearish OB at 78,010-78,399 capping immediate upside",
+          "Weekly momentum compressing (ranges shrinking) — trend maturing",
+          "Entry is PROJECTED, not current — requires 3.5% drop to zone first",
+          "No LTF confirmation at zone yet — must wait for 1H CHoCH/MSS",
+          "Funding/long positioning may be elevated at current premium levels"
+        ],
+        "multi_pass_stage_log": {
+          "weekly": {
+            "trend": "BULLISH",
+            "strength": "MODERATE",
+            "macro_narrative": "Weekly structure shows a clear bullish sequence from the $60K low (idx -12) through $73.8K, $78.3K, and now $79.5K highs with higher lows at $65.6K, $67.2K, $70.5K, $73.7K. The trend is intact but momentum has moderated — recent weekly ranges are compressing (idx -3 to -1: ~$12K, ~$7.8K, ~$5.7K) suggesting the impulsive phase from $60K-$79K is maturing into a potential consolidation or slower grind higher.",
+            "macro_dol": "Major BSL at $79,462 (weekly high idx -1) and $80,000 psychological level. Next macro liquidity target is the $84K-$85K zone (unfilled weekly FVG from idx -5 high $72K to idx -4 high $69.3K area is not a gap; the real unfilled macro FVG sits at $108K-$112K from the 2021-2022 distribution, but the immediate weekly DoL is the $79.5K high and $80K round number). Weekly SSL at $73,718 (idx -1 low) protects the bullish structure.",
+            "at_weekly_poi": false
+          },
+          "daily": {
+            "direction": "BULLISH",
+            "confidence": 75,
+            "weekly_alignment": "ALIGNED",
+            "last_event": "BOS bullish confirmed at idx -1 (close 79270.5 > prior swing high 78344.3 at idx -5), extending the HH/HL sequence",
+            "dol_description": "Nearest unswept BSL: weekly high $79,462 (idx -1 high) and $80,000 psychological. Daily BSL cluster at $79,398 (idx -1 high) and $78,344 (idx -5 high). Target zone $79.4K-$80K.",
+            "daily_bias_summary": "Daily structure confirms bullish HH/HL sequence: HH at idx -5 ($78,344), HL at idx -4 ($74,890), HH at idx -1 ($79,398), HL forming at idx -1 low ($74,826). Weekly aligned. Price in slight premium near EQ ($77,112) but pullback to Daily OB/FVG zone ($74.9K-$76.2K) would be optimal entry. SMT divergence (ETH lower low, BTC higher low) supports bullish bias.",
+            "_daily_math_audit": {
+              "checked_count": 0,
+              "had_contradiction_initially": false,
+              "resolved": true,
+              "retries_used": 0
+            }
+          },
+          "h4": {
+            "daily_alignment": "PULLBACK",
+            "mmm_phase": 4,
+            "price_at_zone": false,
+            "refined_zones_summary": "4H Bullish OB at 74,826-75,026 (idx -5, impulse ratio 4.2, BOS confirmed, fresh). 4H Bearish OB at 78,010-78,399 (idx -1, impulse ratio 1.1, weak). Bullish FVG at 76,330-77,744 (idx -3 to -1, size 1.8%, fresh). Bearish FVG at 75,415-75,840 (idx -6 to -4, size 0.5%, partially filled). Price at 78,299 (idx -1 close) is in premium above EQ (~77,112), near 4H bearish OB resistance. Pullback toward 74.8K-76.2K zone (Daily OB/FVG overlap) needed for aligned entry.",
+            "h4_context_summary": "4H structure shows bullish HH/HL sequence (HH idx -5 HHs since idx -30). Current candle idx -1 forms a weak bearish OB at highs with low impulse ratio (1.1). Price in premium, extended from Daily OB zone. MMM Phase 4 (re-distribution/correction) — price needs to pull back to 74.8K-76.2K (Daily OB + 4H OB + FVG overlap) for Phase 1 re-accumulation before next impulse. No LTF entry signal at current location."
+          },
+          "h1": {
+            "entry_ready": false,
+            "structural_shift_direction": "NONE",
+            "last_candle_report": {
+              "open": 78163.2,
+              "high": 78399.0,
+              "low": 78100.1,
+              "close": 78299.6,
+              "color": "GREEN"
+            },
+            "tactical_summary": "1H structure remains bullish (HH/HL sequence intact). Last candle idx -1 is a small bullish candle (range 298.9, body 136.4, body_pct 45.6%) — no displacement, no CHoCH/MSS. Price at 78,299 is in premium above EQ (~77,112), near 4H bearish OB resistance (78,010-78,399). No structural shift at HTF zone (Daily OB/FVG 74.8K-76.2K). Price has not yet pulled back to the re-accumulation zone. Wait for pullback to 74.8K-76.2K and 1H CHoCH/MSS there before proceeding to Entry TF."
+          }
+        },
+        "knowledge_citation_audit": {
+          "mechanical_bos": {
+            "bos_found": true,
+            "direction": "UP",
+            "broken_level": 75917.2,
+            "displacement_index_from_end": -10,
+            "displacement_body_pct": 91.8,
+            "displacement_range_atr_ratio": 2.38,
+            "displacement_vol_ratio": 3.15,
+            "candles_since_displacement": 10,
+            "closes_beyond_level_count": 10,
+            "held": true
+          },
+          "mechanical_swings": {
+            "significant_highs": [
+              {
+                "index_from_end": -40,
+                "price": 76564.2
+              },
+              {
+                "index_from_end": -28,
+                "price": 76954.1
+              }
+            ],
+            "significant_lows": [
+              {
+                "index_from_end": -60,
+                "price": 73717.9
+              },
+              {
+                "index_from_end": -17,
+                "price": 74825.6
+              }
+            ],
+            "all_highs_tiered": [
+              {
+                "index_from_end": -53,
+                "price": 75579.7,
+                "tier": "MINOR",
+                "prominence_atr": 1.2
+              },
+              {
+                "index_from_end": -40,
+                "price": 76564.2,
+                "tier": "MODERATE",
+                "prominence_atr": 1.77
+              },
+              {
+                "index_from_end": -35,
+                "price": 76270.2,
+                "tier": "MINOR",
+                "prominence_atr": 0.63
+              },
+              {
+                "index_from_end": -28,
+                "price": 76954.1,
+                "tier": "MODERATE",
+                "prominence_atr": 2.77
+              },
+              {
+                "index_from_end": -22,
+                "price": 76596.5,
+                "tier": "MINOR",
+                "prominence_atr": 0.86
+              },
+              {
+                "index_from_end": -17,
+                "price": 75917.2,
+                "tier": "MINOR",
+                "prominence_atr": 0.53
+              },
+              {
+                "index_from_end": -7,
+                "price": 78450.0,
+                "tier": "UNCONFIRMED_RECENT",
+                "prominence_atr": null
+              },
+              {
+                "index_from_end": -4,
+                "price": 78210.0,
+                "tier": "UNCONFIRMED_RECENT",
+                "prominence_atr": null
+              },
+              {
+                "index_from_end": -1,
+                "price": 78399.0,
+                "tier": "UNCONFIRMED_RECENT",
+                "prominence_atr": null
+              }
+            ],
+            "all_lows_tiered": [
+              {
+                "index_from_end": -60,
+                "price": 73717.9,
+                "tier": "MAJOR",
+                "prominence_atr": 8.44
+              },
+              {
+                "index_from_end": -55,
+                "price": 74110.0,
+                "tier": "MINOR",
+                "prominence_atr": 0.69
+              },
+              {
+                "index_from_end": -45,
+                "price": 74703.8,
+                "tier": "MINOR",
+                "prominence_atr": 0.73
+              },
+              {
+                "index_from_end": -37,
+                "price": 75604.5,
+                "tier": "MINOR",
+                "prominence_atr": 0.55
+              },
+              {
+                "index_from_end": -33,
+                "price": 75485.7,
+                "tier": "MINOR",
+                "prominence_atr": 1.39
+              },
+              {
+                "index_from_end": -17,
+                "price": 74825.6,
+                "tier": "MODERATE",
+                "prominence_atr": 3.23
+              }
+            ],
+            "minor_swings_filtered_count": 1
+          },
+          "mechanical_sweep": {
+            "swept_level_price": 78210.0,
+            "sweep_candle_index_from_end": -1,
+            "swing_type_swept": "PRIOR_SWING_HIGH",
+            "classification": "LIKELY_CONTINUATION_RUN",
+            "wicked_beyond_level": true,
+            "closed_back_inside": false,
+            "displacement_confirmed": false,
+            "displacement_detail": null,
+            "found": true
+          },
+          "claims": {
+            "bos": {
+              "mechanical_truth": {
+                "direction": "UP",
+                "index_from_end": -10,
+                "broken_level": 75917.2
+              },
+              "classification": "GENUINE_CITATION",
+              "matched_index": true,
+              "matched_level": true
+            },
+            "sweep": {
+              "mechanical_truth": {
+                "index_from_end": -1,
+                "level": 78210.0,
+                "classification_mechanical": "LIKELY_CONTINUATION_RUN"
+              },
+              "classification": "GENUINE_CITATION",
+              "matched_index": true,
+              "matched_level": true
+            }
+          },
+          "genuine_citation_count": 2,
+          "vague_citation_count": 0,
+          "no_citation_count": 0,
+          "contradicts_math_count": 0,
+          "genuine_citation_rate_pct": 100.0
+        },
+        "runtime_seconds": 222.3
+      }
+    },
+    {
+      "id": 5,
+      "symbol": "BTC/USDT",
+      "date": "2026-04-14",
+      "human_bias": "LONG (cautious)",
+      "human_entry": [
+        73000,
+        74500
+      ],
+      "human_sl": 69000,
+      "human_tp": [
+        75296,
+        78903
+      ],
+      "human_outcome": "TP_HIT(75296)",
+      "human_pnl_pct": 2.096,
+      "bot_signal": "HOLD",
+      "bot_confidence": 0,
+      "bot_entry": null,
+      "bot_sl": null,
+      "bot_tp": null,
+      "bot_rr": null,
+      "bot_outcome": null,
+      "bot_pnl_pct": null,
+      "stopped_at_gate": "GATE 3 (4H Context)",
+      "market_dir_10d": "BULLISH",
+      "market_pct_10d": 4.06,
+      "bot_dollar_pnl_on_100": null,
+      "human_dollar_pnl_on_100": 2.1,
+      "source_url": "https://www.capitalstreetfx.com/trade-idea/bitcoin-btc-usd-trade-idea/",
+      "source_time_quality": "date/setup verified; 08:30 UTC is event/archived timestamp",
+      "audit_comment_ar": "الإنسان ربح والبوت توقف Gate 3؛ فرصة صحيحة فاتت بسبب over-filtering.",
+      "bot_analysis_detail": {
+        "analysis_method": "multi_pass_topdown_ict",
+        "stages_completed": 3,
+        "stopped_at_gate": "GATE 3 (4H Context)",
+        "narrative": "توقف التحليل عند GATE 3 (4H Context): 4H باندفاع (Phase 3) لكن السعر ليس عند منطقة دخول - ننتظر تصحيحاً (GATE 3)",
+        "reasoning": "4H باندفاع (Phase 3) لكن السعر ليس عند منطقة دخول - ننتظر تصحيحاً (GATE 3)",
+        "cross_reference_check": null,
+        "structural_derivation": null,
+        "archetype": "N/A (توقف مبكر بالـGate)",
+        "bos_reconciliation": "N/A",
+        "confluence_factors": null,
+        "risks": null,
+        "multi_pass_stage_log": {
+          "weekly": {
+            "trend": "BULLISH",
+            "strength": "MODERATE",
+            "macro_narrative": "Weekly structure shows a clear bullish sequence with higher highs and higher lows established from the 2022 lows around $15K-$16K area through the 2024 highs near $108K-$109K. The current weekly candle (-1) closed at $75,851 after a strong bullish week from $70,887, confirming the trend remains intact with price holding above the key weekly swing low at $65,000 (candle -3).",
+            "macro_dol": "Major weekly BSL at $108,909 (candle -40 high) and $109,000 psychological level remain the primary macro draw on liquidity targets. Weekly FVG at $96,000-$97,200 (candles -49/-48) is an intermediate target that remains unfilled.",
+            "at_weekly_poi": false
+          },
+          "daily": {
+            "direction": "BULLISH",
+            "confidence": 75,
+            "weekly_alignment": "ALIGNED",
+            "last_event": "BOS bullish confirmed at candle -3 (close 70887 > prior swing high ~70320 from candle -32)",
+            "dol_description": "Daily Draw on Liquidity targets the unswept BSL at $76,048 (candle -1 high) and the major weekly BSL at $108,909. Immediate target is PDH/previous daily high at $76,048.",
+            "daily_bias_summary": "Daily structure confirms bullish trend with HH/HL sequence intact. Last confirmed BOS at candle -3 broke prior swing high. Price pulled back to form HL at candle -2 (low 70505 > prior HL at 68796). Current candle -1 closed strongly bullish at 75328, confirming continuation. Weekly alignment adds confidence. Bias remains bullish targeting $76K+ liquidity.",
+            "_daily_math_audit": {
+              "checked_count": 1,
+              "had_contradiction_initially": false,
+              "resolved": true,
+              "retries_used": 0
+            }
+          },
+          "h4": {
+            "daily_alignment": "ALIGNED",
+            "mmm_phase": 3,
+            "price_at_zone": false,
+            "refined_zones_summary": "4H structure shows strong bullish impulse from -40 (69004→71915, range 3756, body 89%, vol 4210) breaking prior swing high at 70320 (candle -32). This created a Bullish OB at -41 (68168-69085, CE ~68626) and a Bullish FVG between -40 high (72760) and -38 low (71290) → FVG 71290-72760 (CE 72025). Price pulled back to -15 (73054→71597) forming HL at 71313 > prior HL 70505, then rallied -6 to -1 (70929→74378) with displacement candles at -6 (range 1697, body 56%, vol 1549), -5 (range 1802, body 91%, vol 1957), -4 (range 1896, body 58%, vol 2914). Current price at 7437878 near -1 high 74906. No fresh OB/FVG at current price — last fresh Bullish OB at -7 (70574-70996, CE 70785) and FVG -6/-4 (70762-73008, CE 71885) both far below. Price is extended above all refined zones.",
+            "h4_context_summary": "4H in strong bullish impulse phase (MMM 3) aligned with Daily bias. Structure: HH at 74906 (-1), HL at 71313 (-15). Impulse from -6 to -1 with 3 displacement candles. No fresh entry zones at current price — price extended near swing high. Wait for pullback to 4H OB/FVG zones (70785 OB CE, 71885 FVG CE) or LTF structure shift for entry. DoL remains BSL at 76048 (PDH) and 108909 (Weekly)."
+          }
+        },
+        "knowledge_citation_audit": {
+          "mechanical_bos": {
+            "bos_found": true,
+            "direction": "UP",
+            "broken_level": 73478.2,
+            "displacement_index_from_end": -11,
+            "displacement_body_pct": 92.2,
+            "displacement_range_atr_ratio": 2.78,
+            "displacement_vol_ratio": 6.89,
+            "candles_since_displacement": 11,
+            "closes_beyond_level_count": 11,
+            "held": true
+          },
+          "mechanical_swings": {
+            "significant_highs": [],
+            "significant_lows": [
+              {
+                "index_from_end": -35,
+                "price": 70505.9
+              }
+            ],
+            "all_highs_tiered": [
+              {
+                "index_from_end": -36,
+                "price": 71457.6,
+                "tier": "MINOR",
+                "prominence_atr": 1.22
+              },
+              {
+                "index_from_end": -31,
+                "price": 71277.9,
+                "tier": "MINOR",
+                "prominence_atr": 0.87
+              },
+              {
+                "index_from_end": -10,
+                "price": 74904.2,
+                "tier": "MINOR",
+                "prominence_atr": 1.12
+              }
+            ],
+            "all_lows_tiered": [
+              {
+                "index_from_end": -56,
+                "price": 71313.1,
+                "tier": "MINOR",
+                "prominence_atr": 0.76
+              },
+              {
+                "index_from_end": -42,
+                "price": 70610.8,
+                "tier": "MINOR",
+                "prominence_atr": 1.29
+              },
+              {
+                "index_from_end": -35,
+                "price": 70505.9,
+                "tier": "MAJOR",
+                "prominence_atr": 7.0
+              },
+              {
+                "index_from_end": -25,
+                "price": 70574.3,
+                "tier": "MINOR",
+                "prominence_atr": 1.08
+              },
+              {
+                "index_from_end": -8,
+                "price": 73974.7,
+                "tier": "MINOR",
+                "prominence_atr": 1.02
+              },
+              {
+                "index_from_end": -4,
+                "price": 74156.9,
+                "tier": "UNCONFIRMED_RECENT",
+                "prominence_atr": null
+              }
+            ],
+            "minor_swings_filtered_count": 5
+          },
+          "mechanical_sweep": {
+            "swept_level_price": 74576.2,
+            "sweep_candle_index_from_end": -1,
+            "swing_type_swept": "PRIOR_SWING_HIGH",
+            "classification": "LIKELY_CONTINUATION_RUN",
+            "wicked_beyond_level": true,
+            "closed_back_inside": false,
+            "displacement_confirmed": false,
+            "displacement_detail": null,
+            "found": true
+          },
+          "claims": {
+            "bos": {
+              "mechanical_truth": {
+                "direction": "UP",
+                "index_from_end": -11,
+                "broken_level": 73478.2
+              },
+              "classification": "NO_CITATION",
+              "matched_index": false,
+              "matched_level": false
+            },
+            "sweep": {
+              "mechanical_truth": {
+                "index_from_end": -1,
+                "level": 74576.2,
+                "classification_mechanical": "LIKELY_CONTINUATION_RUN"
+              },
+              "classification": "NO_CITATION",
+              "matched_index": false,
+              "matched_level": false
+            }
+          },
+          "genuine_citation_count": 0,
+          "vague_citation_count": 0,
+          "no_citation_count": 2,
+          "contradicts_math_count": 0,
+          "genuine_citation_rate_pct": 0.0
+        },
+        "runtime_seconds": 90.3
+      }
+    },
+    {
+      "id": 6,
+      "symbol": "ETH/USDT",
+      "date": "2026-03-06",
+      "human_bias": "LONG (contrarian bounce)",
+      "human_entry": [
+        2030,
+        2065
+      ],
+      "human_sl": 1980,
+      "human_tp": [
+        2135,
+        2200
+      ],
+      "human_outcome": "SL_HIT",
+      "human_pnl_pct": -3.297,
+      "bot_signal": "SELL",
+      "bot_confidence": 72,
+      "bot_entry": 2145.0,
+      "bot_sl": 2162.0,
+      "bot_tp": 1835.0,
+      "bot_rr": "17.0:1",
+      "bot_outcome": "SL_HIT",
+      "bot_pnl_pct": -0.793,
+      "stopped_at_gate": null,
+      "market_dir_10d": "BULLISH",
+      "market_pct_10d": 8.05,
+      "bot_dollar_pnl_on_100": -0.79,
+      "human_dollar_pnl_on_100": -3.3,
+      "source_url": "https://www.capitalstreetfx.com/ethereum-eth-trade-idea-march-6-2026-technical-analysis-entry-stop-loss-take-profit/",
+      "source_time_quality": "date/setup verified; archived intraday timestamp",
+      "audit_comment_ar": "الإنسان LONG خسر، والبوت عكس SELL لكنه خسر أيضاً؛ اختلاف الاتجاه لم يمنح edge.",
+      "bot_analysis_detail": {
+        "analysis_method": "multi_pass_topdown_ict",
+        "stages_completed": 5,
+        "stopped_at_gate": null,
+        "narrative": "ETH is in a Daily bearish leg within a Weekly range. The 4H structure confirmed a bearish CHoCH with a high-quality Bearish OB/FVG overlap at 2126-2157 (premium zone). Price pulled back to test the 4H Bullish OB at 2045-2082 (idx -2) but has not yet reached the premium supply zone for a Model B short. The 1H shows no bullish MSS — structure remains bearish. We wait for price to rally into the 4H Bearish OB/FVG (2126-2157) and print a 15m/5m MSS down (CHoCH + displacement) for a Model B entry. Current price (2076) is too low — premature to enter.",
+        "reasoning": "Daily bearish bias confirmed (CHoCH + LH/LL). 4H in Phase 4 pullback to premium Bearish OB/FVG at 2126-2157 (A-tier, fresh, displacement-confirmed). Model B entry requires: (1) price rallies into this zone, (2) LTF (15m/5m) prints MSS down with displacement, (3) during London/NY AM KZ. Current 1H price (2076) is below the zone — entry is NOT triggered yet. The signal SELL with entry 2145 is a CONDITIONAL setup: if price reaches 2145 (CE of 4H Bearish OB/FVG) and 15m shows CHoCH down + displacement, enter. SL at 2162 (above OB top + 0.3×ATR buffer). TP at 1835 (Daily SSL / unswept liquidity pool). R:R = (2145-1835)/(2162-2145) = 310/17 = 18.2:1 >> 3:1 minimum. Confidence 72% (B-tier): +10 Daily+4H alignment, +10 A-tier OB, +8 NY AM KZ (if timed), +5 OTE, +3 volume, -5 Weekly unclear, -3 no sweep yet, -5 entry not yet triggered (conditional).",
+        "cross_reference_check": "Weekly: RANGING (no directional bias). Daily: BEARISH (confirmed CHoCH, LH/LL sequence). 4H: BEARISH (CHoCH confirmed, LH at 2200, LL at 2045, MMM Phase 4 pullback to premium). 1H: BEARISH (LH/LL intact, no MSS up). All four timeframes align on BEARISH direction for execution. Weekly ranging provides no conflict — it simply means the Daily bearish move is a range-bound leg toward the weekly low (1750-1900), not a new weekly trend. No contradiction to resolve.",
+        "structural_derivation": "Causal chain: 4H Bearish OB at idx -12 to -11 (2150.25-2200.00) with embedded FVG 2126.56-2157.23 (created by displacement candle idx -11: range 39.74 > 2×ATR, body 86%, vol 45891 > 2×avg). This OB/FVG produced the bearish impulse that broke the 4H HL at 2067.00 (idx -4), confirming CHoCH at idx -6. The current pullback (idx -1 at 2076) is testing the 4H Bullish OB at idx -2 (2045.70-2082.84) — a reaction zone within the larger bearish structure. The SSL sweep at 2061.77 (idx -4, unconfirmed) is separate — it occurred during the pullback, not at the OB zone. Chain is coherent: 4H OB → displacement → CHoCH → pullback to premium → await LTF entry.",
+        "archetype": "DAILY_BEARISH_LEG_IN_WEEKLY_RANGE_4H_PHASE4_PULLBACK_TO_PREMIUM",
+        "bos_reconciliation": "Daily Bias is BEARISH (commander). 1H structure is BEARISH (LH/LL intact). No contradiction — both align. The 1H has not printed a CHoCH up; the last candle is bearish. Entry will only be taken on LTF MSS DOWN at the 4H premium zone, fully consistent with Daily Bias.",
+        "confluence_factors": [
+          "Daily BEARISH bias (CHoCH confirmed, LH/LL sequence)",
+          "4H Bearish CHoCH confirmed with A-tier OB/FVG at 2126-2157",
+          "MMM Phase 4 (redistribution) — optimal for continuation shorts",
+          "Price targeting premium zone (OTE 62-79% of 2200→2045 drop = 2141-2167)",
+          "Daily SSL target at 1835 (unswept liquidity pool)",
+          "SMT divergence (ETH higher high vs BTC lower high) supports bearish"
+        ],
+        "risks": [
+          "Weekly ranging — move may be limited to weekly low (1750-1900), not a trend",
+          "Entry is CONDITIONAL — price must rally 69 points (3.3%) to reach zone",
+          "No LTF confirmation yet — 15m/5m MSS down required",
+          "4H Bullish OB at 2045-2082 (idx -2) below current price could support bounce",
+          "Funding rate and OI data not provided — crypto-specific risks unknown"
+        ],
+        "multi_pass_stage_log": {
+          "weekly": {
+            "trend": "RANGING",
+            "strength": "MODERATE",
+            "macro_narrative": "Price has been trapped in a massive 2-year range between ~$1,750 and ~$4,800 with no clear HH/HL or LH/LL sequence on the weekly timeframe. The last 12 weeks show a violent rejection from the range high ($4,800) down to the range low ($1,750), and the current weekly candle is forming near the middle of this range with no directional conviction.",
+            "macro_dol": "The macro Draw on Liquidity is bidirectional: upside target is the range high/BSL cluster at $4,800-$4,950 (previous weekly highs -33 to -29), downside target is the range low/SSL cluster at $1,750-$1,900 (weekly lows -48, -5, -4). Price is currently in no-man's land.",
+            "at_weekly_poi": false
+          },
+          "daily": {
+            "direction": "BEARISH",
+            "confidence": 70,
+            "weekly_alignment": "BOTH_UNCLEAR",
+            "last_event": "Bearish CHoCH confirmed at idx -3 (close 1977.74 broke below prior HL at 1969.17 from idx -3 low); prior bullish BOS at idx -3 high 2157.23 broke prior LH at 2065.54 (idx -5 high)",
+            "dol_description": "Nearest unswept SSL below: Daily swing low at 1835.47 (idx -7 low) and 1798.16 (idx -11 low). Primary target: 1798-1835 zone (liquidity pool from prior lows). Secondary: weekly range low 1750-1900.",
+            "daily_bias_summary": "Daily structure flipped bearish: confirmed CHoCH at idx -3 breaking the last HL (1969), followed by LH formation at idx -2 high 2200. Price now making lower highs and lower lows. Weekly context is ranging (no directional edge), but daily structure is clear bearish with 2 LH + 2 LL confirmed. SMT divergence (ETH higher high vs BTC lower high) aligns with bearish bias. Bias: BEARISH. Wait for 4H pullback to supply zone (OTE/premium) for shorts.",
+            "_daily_math_audit": {
+              "checked_count": 0,
+              "had_contradiction_initially": false,
+              "resolved": true,
+              "retries_used": 0
+            }
+          },
+          "h4": {
+            "daily_alignment": "PULLBACK",
+            "mmm_phase": 4,
+            "price_at_zone": true,
+            "refined_zones_summary": "4H Bearish OB at 2150.25-2200.00 (idx -12 to -11) with FVG overlap 2126.56-2157.23; price currently at 2051.18 (idx -1) testing 4H Bullish OB 2045.70-2082.84 (idx -2) — pullback into premium zone for bearish continuation",
+            "h4_context_summary": "4H structure shows bearish CHoCH confirmed at idx -6 (break below 2067.00 HL from idx -4), forming LH at 2200.00 (idx -11) and LL at 2045.70 (idx -1). Price is in MMM Phase 4 (redistribution/correction) pulling back to the 4H Bearish OB/FVG overlap zone (2126-2157) which aligns with Daily bearish bias and OTE (62-79% retrace of 2200→2045 drop = 2141-2167). Current price at 2051 is below the OB zone — awaiting rejection from premium for Model B entry on LTF."
+          },
+          "h1": {
+            "entry_ready": false,
+            "structural_shift_direction": "NONE",
+            "last_candle_report": {
+              "open": 2082.84,
+              "high": 2082.85,
+              "low": 2074.53,
+              "close": 2076.1,
+              "color": "BEARISH"
+            },
+            "tactical_summary": "1H structure remains bearish (LH/LL sequence intact). Last candle (idx -1) is bearish with no MSS/CHoCH UP. Price at 2076 is below the 4H Bearish OB/FVG premium zone (2126-2157). Waiting for pullback into that zone and LTF MSS DOWN for Model B short entry."
+          }
+        },
+        "knowledge_citation_audit": {
+          "mechanical_bos": {
+            "bos_found": false,
+            "direction": null
+          },
+          "mechanical_swings": {
+            "significant_highs": [
+              {
+                "index_from_end": -23,
+                "price": 2163.68
+              }
+            ],
+            "significant_lows": [
+              {
+                "index_from_end": -16,
+                "price": 2054.35
+              }
+            ],
+            "all_highs_tiered": [
+              {
+                "index_from_end": -58,
+                "price": 2001.61,
+                "tier": "MINOR",
+                "prominence_atr": 0.8
+              },
+              {
+                "index_from_end": -47,
+                "price": 2093.55,
+                "tier": "MINOR",
+                "prominence_atr": 1.18
+              },
+              {
+                "index_from_end": -38,
+                "price": 2200.0,
+                "tier": "UNCONFIRMED_RECENT",
+                "prominence_atr": null
+              },
+              {
+                "index_from_end": -29,
+                "price": 2144.44,
+                "tier": "MINOR",
+                "prominence_atr": 0.63
+              },
+              {
+                "index_from_end": -23,
+                "price": 2163.68,
+                "tier": "MODERATE",
+                "prominence_atr": 1.55
+              },
+              {
+                "index_from_end": -12,
+                "price": 2099.6,
+                "tier": "MINOR",
+                "prominence_atr": 0.73
+              }
+            ],
+            "all_lows_tiered": [
+              {
+                "index_from_end": -60,
+                "price": 1959.35,
+                "tier": "MINOR",
+                "prominence_atr": 0.61
+              },
+              {
+                "index_from_end": -54,
+                "price": 1945.01,
+                "tier": "MINOR",
+                "prominence_atr": 1.24
+              },
+              {
+                "index_from_end": -45,
+                "price": 2036.37,
+                "tier": "MINOR",
+                "prominence_atr": 0.99
+              },
+              {
+                "index_from_end": -25,
+                "price": 2093.78,
+                "tier": "MINOR",
+                "prominence_atr": 1.38
+              },
+              {
+                "index_from_end": -16,
+                "price": 2054.35,
+                "tier": "MODERATE",
+                "prominence_atr": 3.68
+              },
+              {
+                "index_from_end": -8,
+                "price": 2061.77,
+                "tier": "MINOR",
+                "prominence_atr": 0.54
+              },
+              {
+                "index_from_end": -5,
+                "price": 2059.47,
+                "tier": "UNCONFIRMED_RECENT",
+                "prominence_atr": null
+              },
+              {
+                "index_from_end": -4,
+                "price": 2059.47,
+                "tier": "UNCONFIRMED_RECENT",
+                "prominence_atr": null
+              }
+            ],
+            "minor_swings_filtered_count": 5
+          },
+          "mechanical_sweep": {
+            "swept_level_price": 2061.77,
+            "sweep_candle_index_from_end": -4,
+            "swing_type_swept": "PRIOR_SWING_LOW",
+            "classification": "UNCONFIRMED_WAIT_FOR_DISPLACEMENT",
+            "wicked_beyond_level": true,
+            "closed_back_inside": true,
+            "displacement_confirmed": false,
+            "displacement_detail": null,
+            "found": true
+          },
+          "claims": {
+            "bos": {
+              "mechanical_truth": "NO_BOS_DETECTED_MECHANICALLY"
+            },
+            "sweep": {
+              "mechanical_truth": {
+                "index_from_end": -4,
+                "level": 2061.77,
+                "classification_mechanical": "UNCONFIRMED_WAIT_FOR_DISPLACEMENT"
+              },
+              "classification": "GENUINE_CITATION",
+              "matched_index": true,
+              "matched_level": true
+            }
+          },
+          "genuine_citation_count": 1,
+          "vague_citation_count": 0,
+          "no_citation_count": 0,
+          "contradicts_math_count": 0,
+          "genuine_citation_rate_pct": 100.0
+        },
+        "runtime_seconds": 287.0
+      }
+    },
+    {
+      "id": 8,
+      "symbol": "ETH/USDT",
+      "date": "2026-05-08",
+      "human_bias": "LONG (cautious, compression breakout)",
+      "human_entry": [
+        2250,
+        2300
+      ],
+      "human_sl": 2180,
+      "human_tp": [
+        2380,
+        2450,
+        2550
+      ],
+      "human_outcome": "TP_HIT(2380)",
+      "human_pnl_pct": 4.615,
+      "bot_signal": "BUY",
+      "bot_confidence": 62,
+      "bot_entry": 2276.0,
+      "bot_sl": 2250.0,
+      "bot_tp": 2457.0,
+      "bot_rr": "7.6:1",
+      "bot_outcome": "SL_HIT",
+      "bot_pnl_pct": -1.142,
+      "stopped_at_gate": null,
+      "market_dir_10d": "BEARISH",
+      "market_pct_10d": -6.88,
+      "bot_dollar_pnl_on_100": -1.14,
+      "human_dollar_pnl_on_100": 4.62,
+      "source_url": "https://www.capitalstreetfx.com/trade-idea/ethereum-eth-usd-trade-setup-may-8-2026/",
+      "source_time_quality": "date and exact levels verified",
+      "audit_comment_ar": "الاتجاه صحيح، لكن SL البوت 2250 أضيق كثيراً من SL البشري 2180؛ ضُرب قبل وصول حركة الإنسان إلى TP1.",
+      "bot_analysis_detail": {
+        "analysis_method": "multi_pass_topdown_ict",
+        "stages_completed": 5,
+        "stopped_at_gate": null,
+        "narrative": "ETH is in a Daily bullish trend pulling back to a high-quality 4H Bullish OB (2267-2285) that overlaps a Bullish FVG CE (2298). The 1H structure remains bearish (pullback internals) with no CHoCH yet. Price sits at the 4H OB zone during Asian session (low probability). A valid Model A entry requires: (1) 1H/15m CHoCH UP at this zone, (2) during a Kill Zone (London/NY), (3) with displacement confirmation. None of these are met yet. The prior swing low sweep at 2281 (idx -2) was a continuation run, not a trap. We wait for LTF structural shift.",
+        "reasoning": "Daily bullish trend (HH/HL) pulling back to 4H Bullish OB (2267-2285) overlapping FVG CE (2298) in Daily discount/OTE zone. This is a textbook Model A setup (OTE + OB). However, 1H structure has NOT yet produced CHoCH UP — the last 1H candle (idx -1) closed RED at 2275.44 with no MSS. Entry is CONDITIONAL on 1H/15m CHoCH UP at the zone during a Kill Zone. Current session is Asian (dead zone). SL placed below 4H OB bottom (2267) with buffer, respecting Daily HL at 2252. TP targets nearest ERL: Daily BSL at 2457 (previous swing high, unswept). R:R = 7.6:1 exceeds 3:1 minimum. Confidence capped at 62% due to missing LTF confirmation and poor timing (Asian session). This is a PREPARATION signal — actual execution requires LTF trigger.",
+        "cross_reference_check": "Weekly: No clear trend (unclear). Daily: BULLISH (HH/HL sequence intact, pullback to discount/OTE zone). 4H: PULLBACK within Daily bullish trend — price at 4H Bullish OB (2267.1-2284.9) overlapping FVG CE, MMM Phase 4 awaiting LTF confirmation. 1H: BEARISH structure (LH/LL), no CHoCH/MSS yet, last candle RED. CONFLICT: 1H structure is bearish while Daily/4H are bullish. RESOLUTION: This is EXPECTED during a pullback — the 1H shows the pullback's internal structure. The trade direction follows Daily Bias (BULLISH). Entry requires 1H/15m CHoCH UP at the 4H OB zone to confirm the pullback is ending. No entry yet — awaiting LTF confirmation.",
+        "structural_derivation": "Daily BOS bullish confirmed at idx -54 (close 2273.37 > prior swing high ~2088). This BOS was produced by the impulse leg from the Daily HL at 1989.3 (idx -54 low). The 4H Bullish OB at idx -1 (2267.1-2284.9, open=2278.97 low=2267.1) is the last up-candle before the current 4H pullback from 2410 high (idx -12). This OB overlaps with the Bullish FVG (2285.0-2317.8, idx -5 to -3, CE=2298.4) created by the 4H displacement up from the Daily HL area. The recent sweep of prior swing low at 2281.31 (idx -2) is a LIKELY_CONTINUATION_RUN (not a genuine reversal sweep) — it occurred during the pullback without confirming displacement. The causal chain: Daily BOS → 4H impulse creating OB+FVG → pullback to OB/FVG zone → awaiting LTF CHoCH to resume. Chain is coherent: the OB/FVG at the zone ARE the footprints of the impulse that confirmed the Daily BOS direction.",
+        "archetype": "DAILY_BULLISH_PULLBACK_TO_4H_OB_FVG_OVERLAP_AWAITING_LTF_CHOCH",
+        "bos_reconciliation": "Daily Bias is BULLISH (commander). 1H structure is BEARISH — this is the pullback's internal structure, not a trend reversal. The 1H bearishness is EXPECTED and CONSISTENT with a healthy pullback to the 4H OB. No contradiction: the Daily trend remains intact (HL at 2252 unbroken), and the 4H OB is the intended demand zone for the pullback. Entry will only trigger when 1H/15m prints CHoCH UP at this zone, aligning LTF with HTF.",
+        "confluence_factors": [
+          "Daily HH/HL bullish structure intact (BOS confirmed idx -54)",
+          "Price in Daily discount/OTE zone (62-79% retrace of 2252-2457)",
+          "4H Bullish OB at 2267-2285 (fresh, untested, Standard method)",
+          "4H Bullish FVG CE at 2298 overlapping the OB",
+          "MMM Phase 4 (redistribution) at HTF demand zone",
+          "Daily BSL at 2457 unswept (clear ERL target)",
+          "Bullish SMT divergence noted in Daily analysis"
+        ],
+        "risks": [
+          "NO LTF CONFIRMATION YET — 1H structure bearish, no CHoCH/MSS",
+          "Asian session (low probability, dead zone)",
+          "Prior swing low sweep at 2281 (idx -2) was LIKELY_CONTINUATION_RUN, not a genuine trap",
+          "Daily HL at 2252 is close — break would invalidate bullish bias",
+          "Weekly trend unclear (no Weekly alignment bonus)",
+          "Volume below average (0.37x) — low participation"
+        ],
+        "multi_pass_stage_log": {
+          "weekly": {},
+          "daily": {
+            "direction": "BULLISH",
+            "confidence": 70,
+            "weekly_alignment": "BOTH_UNCLEAR",
+            "last_event": "BOS bullish confirmed at idx -54 (close 2273.37 > prior swing high ~2088). No subsequent CHoCH.",
+            "dol_description": "Nearest unswept BSL: Daily swing high at 2457.0 (idx -22). Secondary target: 2466.0 (idx -21 high).",
+            "daily_bias_summary": "Daily structure shows HH/HL sequence since idx -54 low (1989.3): HH at 2308 (idx -54), HL at 2049 (idx -48), HH at 2387 (idx -53), HL at 2170 (idx -52), HH at 2457 (idx -22), HL at 2252 (idx -19). Current pullback from 2457 high holding above 2252 HL. Price at 2293 (idx -1) in discount/OTE zone (62-79% retrace of 2252-2457 range). Bullish SMT divergence supports. Bias remains bullish pending HL defense.",
+            "_daily_math_audit": {
+              "checked_count": 0,
+              "had_contradiction_initially": false,
+              "resolved": true,
+              "retries_used": 0
+            }
+          },
+          "h4": {
+            "daily_alignment": "PULLBACK",
+            "mmm_phase": 4,
+            "price_at_zone": true,
+            "refined_zones_summary": "4H Bullish OB at 2267.1-2284.9 (idx -1, Standard method: open=2278.97, low=2267.1) — fresh, untested, in Discount (EQ~2354). 4H Bearish OB at 2344.8-2347.2 (idx -6, Refined: open=2344.8, close=2330.2) — tested once. Bullish FVG at 2285.0-2317.8.8 (idx -5 to -3, CE=2298.4) — partially filled. Price at 2281.5 (idx -1 close) inside Bullish OB and near FVG CE.",
+            "h4_context_summary": "4H structure in pullback within Daily bullish trend. Price correcting from 2410 high (idx -12) toward Daily OTE/Discount. Current 4H candle (idx -1) forms Bullish OB at demand zone overlapping FVG CE. MMM Phase 4 (redistribution/correction) — awaiting LTF confirmation for Phase 3 resumption. No 4H CHoCH yet; bias remains bullish if HL at 2252 holds."
+          },
+          "h1": {
+            "entry_ready": false,
+            "structural_shift_direction": "NONE",
+            "last_candle_report": {
+              "open": 2276.31,
+              "high": 2278.61,
+              "low": 2268.81,
+              "close": 2275.44,
+              "color": "RED"
+            },
+            "tactical_summary": "1H structure remains bearish (LH/LL sequence). Last candle (idx -1) is RED, closing at 2275.44 — no MSS/CHoCH UP detected. Price is inside the 4H Bullish OB (2267.1-2284.9) and near the FVG CE (2298.4), but LTF confirmation is absent. Awaiting 1H CHoCH above the recent 1H LH (~2296 at idx -12) or a clear 15m structural shift within the zone during a Kill Zone. Current session: Asian (low probability). HOLD."
+          }
+        },
+        "knowledge_citation_audit": {
+          "mechanical_bos": {
+            "bos_found": false,
+            "direction": null
+          },
+          "mechanical_swings": {
+            "significant_highs": [],
+            "significant_lows": [
+              {
+                "index_from_end": -55,
+                "price": 2354.17
+              },
+              {
+                "index_from_end": -30,
+                "price": 2313.81
+              }
+            ],
+            "all_highs_tiered": [
+              {
+                "index_from_end": -58,
+                "price": 2388.56,
+                "tier": "MINOR",
+                "prominence_atr": 1.27
+              },
+              {
+                "index_from_end": -52,
+                "price": 2380.87,
+                "tier": "MINOR",
+                "prominence_atr": 0.87
+              },
+              {
+                "index_from_end": -44,
+                "price": 2423.69,
+                "tier": "UNCONFIRMED_RECENT",
+                "prominence_atr": null
+              },
+              {
+                "index_from_end": -34,
+                "price": 2357.71,
+                "tier": "MINOR",
+                "prominence_atr": 0.53
+              },
+              {
+                "index_from_end": -24,
+                "price": 2347.2,
+                "tier": "MINOR",
+                "prominence_atr": 1.47
+              }
+            ],
+            "all_lows_tiered": [
+              {
+                "index_from_end": -55,
+                "price": 2354.17,
+                "tier": "MODERATE",
+                "prominence_atr": 2.01
+              },
+              {
+                "index_from_end": -50,
+                "price": 2354.7,
+                "tier": "MINOR",
+                "prominence_atr": 0.92
+              },
+              {
+                "index_from_end": -41,
+                "price": 2346.0,
+                "tier": "MINOR",
+                "prominence_atr": 0.58
+              },
+              {
+                "index_from_end": -37,
+                "price": 2337.78,
+                "tier": "MINOR",
+                "prominence_atr": 0.59
+              },
+              {
+                "index_from_end": -30,
+                "price": 2313.81,
+                "tier": "MODERATE",
+                "prominence_atr": 1.58
+              },
+              {
+                "index_from_end": -21,
+                "price": 2317.53,
+                "tier": "MINOR",
+                "prominence_atr": 0.81
+              },
+              {
+                "index_from_end": -14,
+                "price": 2280.0,
+                "tier": "MINOR",
+                "prominence_atr": 0.78
+              },
+              {
+                "index_from_end": -4,
+                "price": 2265.0,
+                "tier": "UNCONFIRMED_RECENT",
+                "prominence_atr": null
+              },
+              {
+                "index_from_end": -1,
+                "price": 2268.81,
+                "tier": "UNCONFIRMED_RECENT",
+                "prominence_atr": null
+              }
+            ],
+            "minor_swings_filtered_count": 4
+          },
+          "mechanical_sweep": {
+            "swept_level_price": 2281.31,
+            "sweep_candle_index_from_end": -2,
+            "swing_type_swept": "PRIOR_SWING_LOW",
+            "classification": "LIKELY_CONTINUATION_RUN",
+            "wicked_beyond_level": true,
+            "closed_back_inside": false,
+            "displacement_confirmed": false,
+            "displacement_detail": null,
+            "found": true
+          },
+          "claims": {
+            "bos": {
+              "mechanical_truth": "NO_BOS_DETECTED_MECHANICALLY"
+            },
+            "sweep": {
+              "mechanical_truth": {
+                "index_from_end": -2,
+                "level": 2281.31,
+                "classification_mechanical": "LIKELY_CONTINUATION_RUN"
+              },
+              "classification": "GENUINE_CITATION",
+              "matched_index": true,
+              "matched_level": true
+            }
+          },
+          "genuine_citation_count": 1,
+          "vague_citation_count": 0,
+          "no_citation_count": 0,
+          "contradicts_math_count": 0,
+          "genuine_citation_rate_pct": 100.0
+        },
+        "runtime_seconds": 565.6
+      }
+    },
+    {
+      "id": 10,
+      "symbol": "ETH/USDT",
+      "date": "2026-03-12",
+      "human_bias": "LONG (cautious, demand zone)",
+      "human_entry": [
+        1960,
+        2010
+      ],
+      "human_sl": 1895,
+      "human_tp": [
+        2123,
+        2200
+      ],
+      "human_outcome": "TP_HIT(2123)",
+      "human_pnl_pct": 6.952,
+      "bot_signal": "BUY",
+      "bot_confidence": 78,
+      "bot_entry": 2015.55,
+      "bot_sl": 2005.0,
+      "bot_tp": 2200.0,
+      "bot_rr": "9.5:1",
+      "bot_outcome": "SL_HIT",
+      "bot_pnl_pct": -0.523,
+      "stopped_at_gate": null,
+      "market_dir_10d": "NEUTRAL",
+      "market_pct_10d": 0.63,
+      "bot_dollar_pnl_on_100": -0.52,
+      "human_dollar_pnl_on_100": 6.95,
+      "source_url": "https://www.capitalstreetfx.com/crypto-market-analysis-march-12-2026-btc-%C2%B7-eth-%C2%B7-xrp-%C2%B7-sol-capital-street-fx/",
+      "source_time_quality": "date and setup verified; archived intraday timestamp",
+      "audit_comment_ar": "الاتجاه صحيح، لكن SL البوت 2005 شديد الضيق مقابل SL البشري 1895؛ خسارة bot مع فوز الإنسان.",
+      "bot_analysis_detail": {
+        "analysis_method": "multi_pass_topdown_ict",
+        "stages_completed": 5,
+        "stopped_at_gate": null,
+        "narrative": "ETH is in a coherent multi-timeframe bullish structure. Weekly and Daily trends are aligned upward. The 4H timeframe completed a deep pullback to the 1966 low (candle -7), forming a fresh A-tier Bullish OB and FVG in the discount zone, then displaced aggressively to 2095 (candle -1) with a confirmed 4H BOS. The 1H is now pausing near 2081 after this rally. The setup is NOT yet entry-ready on the 1H — price must pull back to the 4H OB/FVG overlap zone (2013-2026) and produce a 1H CHoCH/MSS bullish to trigger a Model B entry. Current 1H candle shows rejection at 2081 (long upper wick) but no structural shift. The trade thesis: wait for pullback to 2013-2026 with 1H confirmation, then target the Daily DoL at 2200 (EQH liquidity cluster).",
+        "reasoning": "Model B conditions are met on the 4H/1H stack: (1) SSL swept at 4H OB low (2013.0) with displacement reversal confirmed, (2) Fresh 4H Bullish OB (2013-2018) and FVG (2019-2026) overlap in discount zone, (3) Daily bias bullish with DoL at 2200 (EQH triple), (4) Weekly aligned. Entry at 4H OB CE (2015.55) with SL below OB low (2005, ~0.5% buffer). TP at Daily BSL/ERL 2200 (major liquidity target). R:R = (2200-2015.55)/(2015.55-2005) = 184.45/10.55 = 17.5:1 — well above 3:1 minimum. Current 1H price (2065) is above entry zone — must wait for pullback to 2015 area with 1H CHoCH bullish. Confidence 78%: strong HTF alignment, fresh zones, clear DoL, but entry not yet triggered (deduction for pending confirmation).",
+        "cross_reference_check": "All four timeframes align BULLISH. Weekly: bullish trend with HH/HL sequence intact. Daily: bullish bias (75% confidence), HH/HL confirmed, price in pullback toward OTE zone. 4H: MMM Phase 4 pullback within Daily bullish trend, fresh Bullish OB (2013-2018) and FVG (2019-2026) in discount zone, price currently above zones rallying toward 2095. 1H: bullish structure intact (HH/HL), currently in corrective pause after rally from 2081 high, no MSS/CHoCH yet — waiting for pullback to 4H zones. No conflicts. Daily Bias is the commander and all lower TFs support the bullish direction.",
+        "structural_derivation": "The 4H Bullish OB at index -7 (open 2018.1, low 2013.0) was the last opposing candle before the displacement rally from 1966 to 2095 (candles -7 to -1). This OB created the 4H FVG at indices -17/-15 (2019.11-2026.51) during the impulsive move up. The 4H BOS bullish occurred at candle -1 (close 2095.55 > prior HH 2085.9 at -21). The liquidity sweep at the 4H OB zone (low 2013.0) was the SSL sweep that fueled the displacement — chain is coherent: SSL sweep at 4H OB → displacement → FVG creation → 4H BOS. Current price is above this entire structure, awaiting pullback to the OB/FVG overlap for Model B entry.",
+        "archetype": "TREND_CONTINUATION_PULLBACK",
+        "bos_reconciliation": "No contradiction. Daily Bias is BULLISH. 1H structure is bullish (HH/HL intact) but in a corrective pause — not a reversal. The 1H has not yet produced the CHoCH/MSS needed for entry, but this is expected during a pullback phase. The direction is consistent; only the timing (entry trigger) is pending. If 1H were to print a bearish CHoCH with displacement below 2050, that would contradict Daily Bias and require reassessment — but current 1H action is normal consolidation within a bullish trend.",
+        "confluence_factors": [
+          "Weekly bullish trend aligned",
+          "Daily bullish bias (HH/HL confirmed, 75% confidence)",
+          "4H MMM Phase 4 — fresh Bullish OB + FVG overlap in discount",
+          "SSL swept at 4H OB low (2013) with displacement reversal",
+          "4H BOS bullish confirmed at 2095",
+          "Daily DoL at 2200 (EQH triple liquidity cluster)",
+          "Price in Daily OTE zone (50% retracement of last impulse)"
+        ],
+        "risks": [
+          "Entry not yet triggered — 1H must pull back to 2015 zone and show CHoCH/MSS bullish",
+          "Current 1H price (2065) is 2.5% above planned entry — premature entry would worsen R:R",
+          "If 1H breaks below 2050 with displacement, bullish thesis weakens",
+          "Funding rate and OI data not provided — crypto-specific risks unassessed"
+        ],
+        "multi_pass_stage_log": {
+          "weekly": {
+            "trend": "BULLISH",
+            "strength": "MODERATE",
+            "macro_narrative": "Weekly structure shows a clear bullish sequence with higher highs (3858→4887) and higher lows (1384→2240) established over the past year. The major crash from 4887 to 1744 (candles -7 to -6) was a deep correction within the broader uptrend, and price has since reclaimed above the 2000 level with three consecutive higher weekly closes, confirming the trend remains intact.",
+            "macro_dol": "Major BSL at 4887 (Weekly swing high from candle -30) is the primary macro liquidity target. Secondary target at 3858 (candle -34 high) has already been swept. The draw on liquidity is toward the all-time high region above 4800.",
+            "at_weekly_poi": false
+          },
+          "daily": {
+            "direction": "BULLISH",
+            "confidence": 75,
+            "weekly_alignment": "ALIGNED",
+            "last_event": "BOS bullish confirmed at candle -16 (close 2013.73 > prior swing high ~1996), followed by HH at candle -9 (2157.23) and HL at candle -8 (2067.0). Structure: HH/HL confirmed.",
+            "dol_description": "Primary DoL: BSL at 2200.0 (candle -8 high, EQH with candle -7 high 2099.6) and 2157.23 (candle -9 high). Secondary: Weekly macro BSL at 4887. Daily bias targets the 2200-2250 liquidity cluster first.",
+            "daily_bias_summary": "Daily structure is bullish with confirmed HH/HL sequence (candles -16 to -1). Price is in a pullback from the recent HH at 2157, currently near the 50% retracement/EQ of the last impulse leg. Weekly trend is aligned. Bias is bullish with 75% confidence. Wait for 4H pullback to complete at a Daily OB/FVG in the OTE zone (approx 1980-2020) before seeking entries.",
+            "_daily_math_audit": {
+              "checked_count": 0,
+              "had_contradiction_initially": false,
+              "resolved": true,
+              "retries_used": 0
+            }
+          },
+          "h4": {
+            "daily_alignment": "PULLBACK",
+            "mmm_phase": 4,
+            "price_at_zone": true,
+            "refined_zones_summary": "4H Bullish OB at 2013.0-2018.1 (candle -7, Standard: open 2018.1 to low 2013.0, CE 2015.55). 4H Bullish FVG at 2019.11-2026.51 (candles -17/-15, CE 2022.81). Overlap zone 2019.11-2018.1 (inverted - OB below FVG). Current price 4H4 candle -1 low 2037.99, close 2072.43 - price above both zones. 4H structure: HH at -9 (2157.23), HL at -8 (2067.0), pullback to -7 (1966.0 low), then HH at -1 (2095.55). 4H OB at -7 is fresh (0 tests). FVG at -17/-15 is fresh. Both in discount relative to 4H range (1966-2157, EQ~2061).",
+            "h4_context_summary": "4H in MMM Phase 4 (redistribution/correction) within Daily bullish trend. Price pulled back from 2157 HH to 1966 low (candle -7), forming fresh Bullish OB and FVG in discount zone. Current candle -1 (2072.43) has rallied above both zones and the 4H EQ (~2061), now testing the 2080-2095 area. 4H structure shows HH/HL sequence intact. Next: watch for 4H pullback to OB/FVG overlap zone (2013-2026) for Model B entry, or continuation above 2095 toward Daily DoL at 2200."
+          },
+          "h1": {
+            "entry_ready": false,
+            "structural_shift_direction": "NONE",
+            "last_candle_report": {
+              "open": 2065.68,
+              "high": 2081.05,
+              "low": 2051.46,
+              "close": 2065.58,
+              "color": "RED"
+            },
+            "tactical_summary": "1H structure remains bullish (HH/HL sequence intact). Last candle (-1) is a small red candle (2065.68->2065.58) with a long upper wick (high 2081.05) and lower wick (low 2051.46), closing near open. No MSS/CHoCH detected on 1H — price is in a corrective pause after rallying from the 4H OB/FVG zone (2013-2026) up to 2081. Price is currently ABOVE the refined HTF zones, not at them. Waiting for a pullback to the 4H OB/FVG overlap zone (2013-2026) with a 1H CHoCH/MSS UP to confirm entry readiness. Current 1H structure does not show a shift at an HTF zone."
+          }
+        },
+        "knowledge_citation_audit": {
+          "mechanical_bos": {
+            "bos_found": false,
+            "direction": null
+          },
+          "mechanical_swings": {
+            "significant_highs": [
+              {
+                "index_from_end": -21,
+                "price": 2085.9
+              }
+            ],
+            "significant_lows": [
+              {
+                "index_from_end": -48,
+                "price": 2008.11
+              },
+              {
+                "index_from_end": -31,
+                "price": 2007.36
+              },
+              {
+                "index_from_end": -11,
+                "price": 2017.95
+              }
+            ],
+            "all_highs_tiered": [
+              {
+                "index_from_end": -53,
+                "price": 2074.71,
+                "tier": "MINOR",
+                "prominence_atr": 0.68
+              },
+              {
+                "index_from_end": -46,
+                "price": 2088.69,
+                "tier": "UNCONFIRMED_RECENT",
+                "prominence_atr": null
+              },
+              {
+                "index_from_end": -34,
+                "price": 2041.74,
+                "tier": "MINOR",
+                "prominence_atr": 0.61
+              },
+              {
+                "index_from_end": -25,
+                "price": 2083.11,
+                "tier": "MINOR",
+                "prominence_atr": 0.85
+              },
+              {
+                "index_from_end": -21,
+                "price": 2085.9,
+                "tier": "MODERATE",
+                "prominence_atr": 2.97
+              },
+              {
+                "index_from_end": -1,
+                "price": 2081.05,
+                "tier": "UNCONFIRMED_RECENT",
+                "prominence_atr": null
+              }
+            ],
+            "all_lows_tiered": [
+              {
+                "index_from_end": -48,
+                "price": 2008.11,
+                "tier": "MODERATE",
+                "prominence_atr": 2.35
+              },
+              {
+                "index_from_end": -31,
+                "price": 2007.36,
+                "tier": "MODERATE",
+                "prominence_atr": 3.08
+              },
+              {
+                "index_from_end": -11,
+                "price": 2017.95,
+                "tier": "MODERATE",
+                "prominence_atr": 2.51
+              },
+              {
+                "index_from_end": -1,
+                "price": 2051.46,
+                "tier": "UNCONFIRMED_RECENT",
+                "prominence_atr": null
+              }
+            ],
+            "minor_swings_filtered_count": 6
+          },
+          "mechanical_sweep": {
+            "found": false
+          },
+          "claims": {
+            "bos": {
+              "mechanical_truth": "NO_BOS_DETECTED_MECHANICALLY"
+            },
+            "sweep": {
+              "mechanical_truth": "NO_SWEEP_DETECTED_MECHANICALLY"
+            }
+          },
+          "genuine_citation_count": 0,
+          "vague_citation_count": 0,
+          "no_citation_count": 0,
+          "contradicts_math_count": 0,
+          "genuine_citation_rate_pct": null
+        },
+        "runtime_seconds": 182.0
+      }
+    },
+    {
+      "id": 11,
+      "symbol": "BTC/USDT",
+      "date": "2026-06-24",
+      "human_bias": "SHORT (primary, high confidence)",
+      "human_entry": [
+        63200,
+        63800
+      ],
+      "human_sl": 65100,
+      "human_tp": [
+        60500,
+        59239,
+        56900
+      ],
+      "human_outcome": "NEITHER_HIT_WITHIN_WINDOW",
+      "human_pnl_pct": 1.213,
+      "bot_signal": "SELL",
+      "bot_confidence": 72,
+      "bot_entry": 64500.0,
+      "bot_sl": 64850.0,
+      "bot_tp": 58110.0,
+      "bot_rr": "18.3:1",
+      "bot_outcome": "ENTRY_NEVER_HIT",
+      "bot_pnl_pct": null,
+      "stopped_at_gate": null,
+      "market_dir_10d": "NEUTRAL",
+      "market_pct_10d": -0.4,
+      "bot_dollar_pnl_on_100": null,
+      "human_dollar_pnl_on_100": 1.21,
+      "source_url": "https://www.capitalstreetfx.com/trade-idea/bitcoin-btc-usd-trade-setup-market-analysis/",
+      "source_time_quality": "date and exact short levels verified",
+      "audit_comment_ar": "الاتجاه SHORT متفق، لكن دخول البوت 64500 لم يُلمس ضمن النافذة؛ No-fill وليس خسارة.",
+      "bot_analysis_detail": {
+        "analysis_method": "multi_pass_topdown_ict",
+        "stages_completed": 5,
+        "stopped_at_gate": null,
+        "narrative": "BTC is in a confirmed multi-timeframe bearish trend (Weekly/Daily/4H aligned). Price has pulled back from the 61,930 sweep low toward the 4H Bearish OB/FVG confluence at 64,454-64,759 but has only reached 63,245 so far (idx -1 high). The 1H structure remains bearish with no bullish MSS/CHoCH. The setup is a Model C (BOS Pullback) short: wait for price to rally into the 4H OB/FVG zone AND for a 1H MSS/CHoCH down (break of a 1H Higher Low) to confirm the pullback is exhausted and the downtrend resumes. Current price 62,920 is below the HTF zone — entry not yet triggered.",
+        "reasoning": "Entry at 64,500 (midpoint of 4H Bearish OB 64,454-64,759 / FVG 64,377-64,719 confluence). SL at 64,850 (above OB top + 0.15% buffer = 64,759 * 1.0015 ≈ 64,856, rounded to 64,850). TP at 58,110 (Weekly SSL / macro Draw on Liquidity). R:R = (64500-58110)/(64850-64500) = 6390/350 = 18.3:1 >> 3:1 minimum. Confidence 72%: +10 Daily+4H alignment, +10 A-tier OB/FVG confluence, +5 Model C structure, +5 NY AM KZ approaching, +3 volume potential, -3 Weekly ranging/unclear, -5 pullback not yet at zone (premature signal), -3 no 1H MSS confirmation yet. Entry is anticipatory — actual fill requires price to rally ~1,580 points (2.5%) into zone AND 1H MSS down.",
+        "cross_reference_check": "Weekly: BEARISH (LH/LL sequence from $126K high, weekly candle closed near low at $59,895). Daily: BEARISH (75% confidence, LH/LL since idx -10 high 67,300, bearish BOS confirmed at idx -1). 4H: BEARISH alignment (LH/LL since idx -58 high 65,797), price in Phase 4 pullback, Bearish OB/FVG confluence at 64,454-64,759 is the short zone. 1H: BEARISH structure intact (LH/LL), last candle bullish but failed to break prior 1H LH at 63,016 (idx -12), no MSS/CHoCH down yet. ALL FOUR TIMEFRAMES AGREE ON BEARISH DIRECTION. No conflicts.",
+        "structural_derivation": "The 4H Bearish OB at 64,454-64,759 (idx -64 to -63) was the origin of the impulsive displacement down to the 61,930 low (idx -7). This OB created a Bearish FVG (64,377-64,719) during the displacement. The current pullback from 61,930 is testing toward this OB/FVG confluence. The nearest downside liquidity (SSL) is the swing low at 61,930 (idx -7) which was already swept. The next Draw on Liquidity is the weekly SSL at ~58,110. The causal chain_coherent: true",
+        "archetype": "TREND_CONTINUATION_PULLBACK_SHORT",
+        "bos_reconciliation": "Daily Bias is BEARISH (commander). 1H last candle is bullish (62449 -> 62919) but this is a corrective candle WITHIN the bearish pullback, NOT a trend reversal. It failed to break the 1H LH at 63,016. No contradiction — the bullish candle is expected pullback behavior. The bearish thesis holds: price must reach the 4H OB zone and show 1H MSS down before entry.",
+        "confluence_factors": [
+          "Weekly/Daily/4H bearish alignment (LH/LL on all three)",
+          "4H Bearish OB (64,454-64,759) + FVG (64,377-64,719) confluence at pullback target",
+          "Daily BOS confirmed bearish at idx -1",
+          "SSL at 61,930 already swept (liquidity taken)",
+          "Draw on Liquidity: Weekly SSL at 58,110 / $50K-$52K macro demand",
+          "MMM Phase 4 (Re-distribution) on 4H",
+          "Approaching NY AM Kill Zone (high probability window for continuation)"
+        ],
+        "risks": [
+          "Pullback may not reach the 4H OB zone (could form lower high earlier)",
+          "No 1H MSS/CHoCH down yet — entry is conditional on this confirmation",
+          "Weekly structure is ranging/unclear (no clear Weekly trend)",
+          "Bullish 1H candle (idx -1) shows strong buying pressure at 62,319 low",
+          "If price breaks above 64,759 (OB top), bearish thesis invalidated"
+        ],
+        "multi_pass_stage_log": {
+          "weekly": {
+            "trend": "BEARISH",
+            "strength": "MODERATE",
+            "macro_narrative": "Price collapsed from the $126K macro high (idx -38) through a series of lower highs and lower lows, with the $60K level (idx -21) acting as a major liquidity sweep before a weak recovery. The weekly structure has printed clear LH/LL sequences since the all-time high, and the most recent weekly candle (idx -1) closed near the low of its range at $59,895, confirming sellers remain in control.",
+            "macro_dol": "Major SSL at $58,110 (weekly low idx -1) and the $59K-$60K zone — the next draw on liquidity is a sweep of the weekly low toward the $50K-$52K region where the 2021-2022 macro demand zone resides.",
+            "at_weekly_poi": false
+          },
+          "daily": {
+            "direction": "BEARISH",
+            "confidence": 75,
+            "weekly_alignment": "ALIGNED",
+            "last_event": "Bearish BOS confirmed at idx -1 (close 60279.9 broke below prior swing low ~61930 from idx -2)",
+            "dol_description": "Draw on Liquidity targets the weekly SSL at $58,110 and the $50K-$52K macro demand zone. Immediate daily target is the swing low at $60,264 (idx -1 low) and a sweep toward $58K-$59K.",
+            "daily_bias_summary": "Daily structure confirms bearish trend with clear LH/LL sequence since idx -10 high (67,300). Last 10 daily candles show consistent lower highs and lower lows. Price is in a corrective bounce within the larger weekly downtrend but has failed to reclaim the 4H/1H bearish structure. Daily bias remains BEARISH with 75% confidence. Next step: 4H analysis to find pullback entry zones for shorts.",
+            "_daily_math_audit": {
+              "checked_count": 0,
+              "had_contradiction_initially": false,
+              "resolved": true,
+              "retries_used": 0
+            }
+          },
+          "h4": {
+            "daily_alignment": "PULLBACK",
+            "mmm_phase": 4,
+            "price_at_zone": true,
+            "refined_zones_summary": "4H Bearish OB at 64,454-64,759 (idx -64 to -63) with FVG overlap (64,377-64,719). Price currently at 62,920 (idx -1) — within pullback zone but not yet at OB. 4H structure shows LH/LL sequence aligned with Daily bearish bias. Key resistance at 63,245 (idx -1 high).",
+            "h4_context_summary": "4H structure confirms bearish alignment with Daily (LH/LL since idx -58 high 65,797). Price in corrective pullback (Phase 4) after impulsive drop from 65,797 to 61,930. Current bounce from 61,930 (idx -7 low) testing 63,245 resistance. Bearish OB/FVG confluence at 64,454-64,759 is the primary short zone if price rallies further. SSL at 61,930 (idx -7 low) is nearest downside liquidity target. DoL remains weekly SSL ~58,110."
+          },
+          "h1": {
+            "entry_ready": false,
+            "structural_shift_direction": "NONE",
+            "last_candle_report": {
+              "open": 62449.1,
+              "high": 63244.7,
+              "low": 62319.0,
+              "close": 62919.7,
+              "color": "GREEN"
+            },
+            "tactical_summary": "1H structure remains bearish (LH/LL sequence intact). Last candle (idx -1) is a strong bullish candle (62449.1 -> 62919.7) but has NOT broken the prior 1H Lower High at 63016.2 (idx -12). No MSS/CHoCH to the downside has occurred at the 4H Bearish OB zone (64,454-64,759). Price is currently at 62,920, well below the HTF short zone. The pullback is still developing. Wait for price to rally into the 4H OB/FVG confluence zone AND for a 1H MSS/CHoCH DOWN (break of a 1H Higher Low) to confirm entry readiness."
+          }
+        },
+        "knowledge_citation_audit": {
+          "mechanical_bos": {
+            "bos_found": false,
+            "direction": null
+          },
+          "mechanical_swings": {
+            "significant_highs": [
+              {
+                "index_from_end": -59,
+                "price": 64834.4
+              }
+            ],
+            "significant_lows": [],
+            "all_highs_tiered": [
+              {
+                "index_from_end": -59,
+                "price": 64834.4,
+                "tier": "MODERATE",
+                "prominence_atr": 2.02
+              },
+              {
+                "index_from_end": -46,
+                "price": 65629.5,
+                "tier": "UNCONFIRMED_RECENT",
+                "prominence_atr": null
+              },
+              {
+                "index_from_end": -35,
+                "price": 64277.3,
+                "tier": "MINOR",
+                "prominence_atr": 0.62
+              },
+              {
+                "index_from_end": -22,
+                "price": 62857.0,
+                "tier": "MINOR",
+                "prominence_atr": 0.99
+              },
+              {
+                "index_from_end": -11,
+                "price": 63119.1,
+                "tier": "MINOR",
+                "prominence_atr": 1.21
+              },
+              {
+                "index_from_end": -7,
+                "price": 63079.5,
+                "tier": "MINOR",
+                "prominence_atr": 0.78
+              },
+              {
+                "index_from_end": -1,
+                "price": 63244.7,
+                "tier": "UNCONFIRMED_RECENT",
+                "prominence_atr": null
+              }
+            ],
+            "all_lows_tiered": [
+              {
+                "index_from_end": -56,
+                "price": 63875.1,
+                "tier": "MINOR",
+                "prominence_atr": 1.07
+              },
+              {
+                "index_from_end": -38,
+                "price": 63806.3,
+                "tier": "MINOR",
+                "prominence_atr": 0.67
+              },
+              {
+                "index_from_end": -28,
+                "price": 61930.0,
+                "tier": "UNCONFIRMED_RECENT",
+                "prominence_atr": null
+              },
+              {
+                "index_from_end": -23,
+                "price": 61964.9,
+                "tier": "MINOR",
+                "prominence_atr": 1.05
+              },
+              {
+                "index_from_end": -18,
+                "price": 62100.7,
+                "tier": "MINOR",
+                "prominence_atr": 0.92
+              },
+              {
+                "index_from_end": -9,
+                "price": 62463.9,
+                "tier": "MINOR",
+                "prominence_atr": 0.77
+              },
+              {
+                "index_from_end": -1,
+                "price": 62319.0,
+                "tier": "UNCONFIRMED_RECENT",
+                "prominence_atr": null
+              }
+            ],
+            "minor_swings_filtered_count": 2
+          },
+          "mechanical_sweep": {
+            "swept_level_price": 62463.9,
+            "sweep_candle_index_from_end": -1,
+            "swing_type_swept": "PRIOR_SWING_LOW",
+            "classification": "UNCONFIRMED_WAIT_FOR_DISPLACEMENT",
+            "wicked_beyond_level": true,
+            "closed_back_inside": true,
+            "displacement_confirmed": false,
+            "displacement_detail": null,
+            "found": true
+          },
+          "claims": {
+            "bos": {
+              "mechanical_truth": "NO_BOS_DETECTED_MECHANICALLY"
+            },
+            "sweep": {
+              "mechanical_truth": {
+                "index_from_end": -1,
+                "level": 62463.9,
+                "classification_mechanical": "UNCONFIRMED_WAIT_FOR_DISPLACEMENT"
+              },
+              "classification": "GENUINE_CITATION",
+              "matched_index": true,
+              "matched_level": true
+            }
+          },
+          "genuine_citation_count": 1,
+          "vague_citation_count": 0,
+          "no_citation_count": 0,
+          "contradicts_math_count": 0,
+          "genuine_citation_rate_pct": 100.0
+        },
+        "runtime_seconds": 257.1
+      }
+    },
+    {
+      "id": 12,
+      "symbol": "BTC/USDT",
+      "date": "2026-06-15",
+      "human_bias": "LONG (counter-trend, conditional on FOMC)",
+      "human_entry": [
+        64200,
+        65800
+      ],
+      "human_sl": 62500,
+      "human_tp": [
+        68124,
+        70958
+      ],
+      "human_outcome": "SL_HIT",
+      "human_pnl_pct": -3.846,
+      "bot_signal": "HOLD",
+      "bot_confidence": 0,
+      "bot_entry": null,
+      "bot_sl": null,
+      "bot_tp": null,
+      "bot_rr": null,
+      "bot_outcome": null,
+      "bot_pnl_pct": null,
+      "stopped_at_gate": "GATE 2 (Daily Bias)",
+      "market_dir_10d": "BEARISH",
+      "market_pct_10d": -10.86,
+      "bot_dollar_pnl_on_100": null,
+      "human_dollar_pnl_on_100": -3.85,
+      "source_url": "https://www.capitalstreetfx.com/trade-idea/bitcoin-btc-usd-trade-setup-june-15-2026/",
+      "source_time_quality": "page shows June 15 and last price at 18:14 UTC",
+      "audit_comment_ar": "الإنسان خسر والبوت HOLD عند Gate 2؛ التحفظ تجنب خسارة.",
+      "bot_analysis_detail": {
+        "analysis_method": "multi_pass_topdown_ict",
+        "stages_completed": 2,
+        "stopped_at_gate": "GATE 2 (Daily Bias)",
+        "narrative": "توقف التحليل عند GATE 2 (Daily Bias): فشل تحليل المرحلة اليومية (لا رد صالح)",
+        "reasoning": "فشل تحليل المرحلة اليومية (لا رد صالح)",
+        "cross_reference_check": null,
+        "structural_derivation": null,
+        "archetype": "N/A (توقف مبكر بالـGate)",
+        "bos_reconciliation": "N/A",
+        "confluence_factors": null,
+        "risks": null,
+        "multi_pass_stage_log": {
+          "weekly": {
+            "trend": "BEARISH",
+            "strength": "MODERATE",
+            "macro_narrative": "Price collapsed from the $126K macro high (idx -37) through a series of lower highs and lower lows, losing ~50% to the $59K region (idx -3 low). The recent bounce from $59K to $67K (idx -3 to -1) is a corrective rally within the dominant downtrend, not a trend reversal.",
+            "macro_dol": "Major SSL at $59,111 (idx -3 low) remains the primary macro liquidity target. A clean weekly close below this level opens the path to the $50K-$52K zone (2022-2023 macro demand). Upside liquidity clusters at $73K-$74K (idx -4 high) and $78K-$79K (idx -6/-8 highs) as bearish targets if the rally continues.",
+            "at_weekly_poi": false
+          },
+          "daily": {}
+        },
+        "knowledge_citation_audit": {
+          "mechanical_bos": {
+            "bos_found": true,
+            "direction": "UP",
+            "broken_level": 66001.0,
+            "displacement_index_from_end": -4,
+            "displacement_body_pct": 97.3,
+            "displacement_range_atr_ratio": 1.78,
+            "displacement_vol_ratio": 0.72,
+            "candles_since_displacement": 4,
+            "closes_beyond_level_count": 4,
+            "held": true
+          },
+          "mechanical_swings": {
+            "significant_highs": [
+              {
+                "index_from_end": -46,
+                "price": 64758.8
+              }
+            ],
+            "significant_lows": [
+              {
+                "index_from_end": -25,
+                "price": 63683.9
+              }
+            ],
+            "all_highs_tiered": [
+              {
+                "index_from_end": -52,
+                "price": 64345.0,
+                "tier": "MINOR",
+                "prominence_atr": 0.55
+              },
+              {
+                "index_from_end": -46,
+                "price": 64758.8,
+                "tier": "MODERATE",
+                "prominence_atr": 2.4
+              },
+              {
+                "index_from_end": -33,
+                "price": 64673.2,
+                "tier": "MINOR",
+                "prominence_atr": 0.68
+              },
+              {
+                "index_from_end": -19,
+                "price": 65931.8,
+                "tier": "MINOR",
+                "prominence_atr": 0.52
+              },
+              {
+                "index_from_end": -12,
+                "price": 66001.0,
+                "tier": "MINOR",
+                "prominence_atr": 0.55
+              },
+              {
+                "index_from_end": -4,
+                "price": 67300.0,
+                "tier": "UNCONFIRMED_RECENT",
+                "prominence_atr": null
+              }
+            ],
+            "all_lows_tiered": [
+              {
+                "index_from_end": -51,
+                "price": 63920.0,
+                "tier": "MINOR",
+                "prominence_atr": 0.68
+              },
+              {
+                "index_from_end": -36,
+                "price": 64232.8,
+                "tier": "MINOR",
+                "prominence_atr": 0.68
+              },
+              {
+                "index_from_end": -25,
+                "price": 63683.9,
+                "tier": "MODERATE",
+                "prominence_atr": 2.11
+              },
+              {
+                "index_from_end": -10,
+                "price": 65514.1,
+                "tier": "MINOR",
+                "prominence_atr": 0.63
+              }
+            ],
+            "minor_swings_filtered_count": 5
+          },
+          "mechanical_sweep": {
+            "swept_level_price": 66001.0,
+            "sweep_candle_index_from_end": -2,
+            "swing_type_swept": "PRIOR_SWING_HIGH",
+            "classification": "LIKELY_CONTINUATION_RUN",
+            "wicked_beyond_level": true,
+            "closed_back_inside": false,
+            "displacement_confirmed": false,
+            "displacement_detail": null,
+            "found": true
+          },
+          "claims": {
+            "bos": {
+              "mechanical_truth": {
+                "direction": "UP",
+                "index_from_end": -4,
+                "broken_level": 66001.0
+              },
+              "classification": "NO_CITATION",
+              "matched_index": false,
+              "matched_level": false
+            },
+            "sweep": {
+              "mechanical_truth": {
+                "index_from_end": -2,
+                "level": 66001.0,
+                "classification_mechanical": "LIKELY_CONTINUATION_RUN"
+              },
+              "classification": "NO_CITATION",
+              "matched_index": false,
+              "matched_level": false
+            }
+          },
+          "genuine_citation_count": 0,
+          "vague_citation_count": 0,
+          "no_citation_count": 2,
+          "contradicts_math_count": 0,
+          "genuine_citation_rate_pct": 0.0
+        },
+        "runtime_seconds": 37.2
+      }
+    },
+    {
+      "id": 14,
+      "symbol": "BTC/USDT",
+      "date": "2026-05-05",
+      "human_bias": "LONG (cautiously bullish, primary)",
+      "human_entry": [
+        79200,
+        80400
+      ],
+      "human_sl": 76800,
+      "human_tp": [
+        83522,
+        86000,
+        91117
+      ],
+      "human_outcome": "SL_HIT",
+      "human_pnl_pct": -3.759,
+      "bot_signal": "HOLD",
+      "bot_confidence": 0,
+      "bot_entry": null,
+      "bot_sl": null,
+      "bot_tp": null,
+      "bot_rr": null,
+      "bot_outcome": null,
+      "bot_pnl_pct": null,
+      "stopped_at_gate": "GATE 3 (4H Context)",
+      "market_dir_10d": "NEUTRAL",
+      "market_pct_10d": -0.49,
+      "bot_dollar_pnl_on_100": null,
+      "human_dollar_pnl_on_100": -3.76,
+      "source_url": "https://www.capitalstreetfx.com/market-outlook/bitcoin-btc-usd-trade-setup-may-5-2026/",
+      "source_time_quality": "date and exact levels verified",
+      "audit_comment_ar": "الإنسان خسر والبوت HOLD عند Gate 3؛ التحفظ تجنب خسارة.",
+      "bot_analysis_detail": {
+        "analysis_method": "multi_pass_topdown_ict",
+        "stages_completed": 3,
+        "stopped_at_gate": "GATE 3 (4H Context)",
+        "narrative": "توقف التحليل عند GATE 3 (4H Context): 4H باندفاع (Phase 3) لكن السعر ليس عند منطقة دخول - ننتظر تصحيحاً (GATE 3)",
+        "reasoning": "4H باندفاع (Phase 3) لكن السعر ليس عند منطقة دخول - ننتظر تصحيحاً (GATE 3)",
+        "cross_reference_check": null,
+        "structural_derivation": null,
+        "archetype": "N/A (توقف مبكر بالـGate)",
+        "bos_reconciliation": "N/A",
+        "confluence_factors": null,
+        "risks": null,
+        "multi_pass_stage_log": {
+          "weekly": {
+            "trend": "BULLISH",
+            "strength": "MODERATE",
+            "macro_narrative": "Weekly structure shows a clear HH/HL sequence from the 2022 lows ($15.5K area) through the 2024 highs ($108K+), with the most recent weekly candle (-1) closing at $81,413 after a strong bullish weekly candle (-2) that broke above the $79.5K resistance. The trend is intact but currently in a corrective/pullback phase from the $108K macro high.",
+            "macro_dol": "Upside: Weekly BSL at $108,000-$110,000 (previous macro highs). Downside: Weekly SSL at $78,200 (current weekly low) and $73,700 (weekly -3 low) — a break below $73.7K would threaten the weekly HL structure.",
+            "at_weekly_poi": false
+          },
+          "daily": {
+            "direction": "BULLISH",
+            "confidence": 75,
+            "weekly_alignment": "ALIGNED",
+            "last_event": "BOS bullish confirmed at idx -2 (close 80033.5 > prior swing high ~79488 at idx -9), 2 days ago",
+            "dol_description": "Upside: nearest unswept BSL at $81,730 (current daily high idx -1) then $82,000+ (macro weekly BSL $108K). Downside: SSL at $79,624 (daily low idx -1) then $78,200 (weekly low).",
+            "daily_bias_summary": "Daily structure confirms bullish HH/HL sequence: HH at idx -1 ($81,730) > HH at idx -9 ($79,488); HL at idx -1 ($79,624) > HL at idx -8 ($75,660). Two clear HH + two HL = confirmed bullish structure. Weekly alignment adds confidence. Price at daily highs near EQH cluster ($81.7K) — watch for sweep/continuation. SMT mixed (bullish divergence on lows, bearish on highs) — net neutral, does not override structural read.",
+            "_daily_math_audit": {
+              "checked_count": 0,
+              "had_contradiction_initially": false,
+              "resolved": true,
+              "retries_used": 0
+            }
+          },
+          "h4": {
+            "daily_alignment": "ALIGNED",
+            "mmm_phase": 3,
+            "price_at_zone": false,
+            "refined_zones_summary": "4H structure confirms bullish alignment with Daily: HH at idx -1 (81,329) > HH at idx -8 (80,460); HL at idx -6 (78,205) > HL at idx -14 (78,114). Two clear 4H HH/HL pairs. Current price at 4H highs (idx -1 high 81,329) — extended from last 4H demand zone at idx -6 (78,205-78,693). No fresh 4H OB/FVG at current price. Nearest 4H bullish OB: idx -6 zone ~78,205-78,693 (fresh, untested). Nearest 4H bearish OB: idx -1 zone ~80,721-81,330 (forming). Price in Phase 3 (Impulse) — strong displacement up from idx -6 low with volume expansion (idx -8 vol 2,382 → idx -5 vol 2,645). Next 4H target: Daily BSL at 81,730 (idx -1 high) then macro weekly BSL.",
+            "h4_context_summary": "4H bullish structure aligned with Daily. Phase 3 impulse from idx -6 low (78,205) with displacement candles idx -8 to -5. Price at 4H highs (81,329) — extended, no fresh entry zone at current level. Watch for pullback to idx -6 OB zone (78,205-78,693) or 15m structure shift for continuation entries toward Daily BSL 81,730+."
+          }
+        },
+        "knowledge_citation_audit": {
+          "mechanical_bos": {
+            "bos_found": false,
+            "direction": null
+          },
+          "mechanical_swings": {
+            "significant_highs": [
+              {
+                "index_from_end": -58,
+                "price": 79198.6
+              },
+              {
+                "index_from_end": -33,
+                "price": 79449.3
+              },
+              {
+                "index_from_end": -27,
+                "price": 80622.0
+              },
+              {
+                "index_from_end": -14,
+                "price": 80777.5
+              }
+            ],
+            "significant_lows": [
+              {
+                "index_from_end": -21,
+                "price": 78205.0
+              }
+            ],
+            "all_highs_tiered": [
+              {
+                "index_from_end": -58,
+                "price": 79198.6,
+                "tier": "MODERATE",
+                "prominence_atr": 2.57
+              },
+              {
+                "index_from_end": -33,
+                "price": 79449.3,
+                "tier": "MODERATE",
+                "prominence_atr": 2.28
+              },
+              {
+                "index_from_end": -27,
+                "price": 80622.0,
+                "tier": "MAJOR",
+                "prominence_atr": 4.17
+              },
+              {
+                "index_from_end": -14,
+                "price": 80777.5,
+                "tier": "MODERATE",
+                "prominence_atr": 1.85
+              },
+              {
+                "index_from_end": -9,
+                "price": 80396.0,
+                "tier": "MINOR",
+                "prominence_atr": 0.67
+              }
+            ],
+            "all_lows_tiered": [
+              {
+                "index_from_end": -49,
+                "price": 78061.9,
+                "tier": "MINOR",
+                "prominence_atr": 1.5
+              },
+              {
+                "index_from_end": -31,
+                "price": 78283.6,
+                "tier": "MINOR",
+                "prominence_atr": 1.44
+              },
+              {
+                "index_from_end": -21,
+                "price": 78205.0,
+                "tier": "MAJOR",
+                "prominence_atr": 5.31
+              },
+              {
+                "index_from_end": -17,
+                "price": 78500.0,
+                "tier": "MINOR",
+                "prominence_atr": 0.57
+              },
+              {
+                "index_from_end": -8,
+                "price": 79751.9,
+                "tier": "MINOR",
+                "prominence_atr": 0.77
+              }
+            ],
+            "minor_swings_filtered_count": 6
+          },
+          "mechanical_sweep": {
+            "swept_level_price": 80396.0,
+            "sweep_candle_index_from_end": -1,
+            "swing_type_swept": "PRIOR_SWING_HIGH",
+            "classification": "LIKELY_CONTINUATION_RUN",
+            "wicked_beyond_level": true,
+            "closed_back_inside": false,
+            "displacement_confirmed": false,
+            "displacement_detail": null,
+            "found": true
+          },
+          "claims": {
+            "bos": {
+              "mechanical_truth": "NO_BOS_DETECTED_MECHANICALLY"
+            },
+            "sweep": {
+              "mechanical_truth": {
+                "index_from_end": -1,
+                "level": 80396.0,
+                "classification_mechanical": "LIKELY_CONTINUATION_RUN"
+              },
+              "classification": "NO_CITATION",
+              "matched_index": false,
+              "matched_level": false
+            }
+          },
+          "genuine_citation_count": 0,
+          "vague_citation_count": 0,
+          "no_citation_count": 1,
+          "contradicts_math_count": 0,
+          "genuine_citation_rate_pct": 0.0
+        },
+        "runtime_seconds": 140.2
+      }
+    }
+  ]
+}

@@ -1,0 +1,293 @@
+[
+  {
+    "id": 3,
+    "symbol": "BTC/USDT",
+    "source": "CapitalStreetFX",
+    "publish_date": "2026-04-22",
+    "publish_time_utc": "12:00",
+    "human_bias": "LONG (cautious)",
+    "entry": [
+      76800,
+      78000
+    ],
+    "sl": 73500,
+    "tp": [
+      80000,
+      83312
+    ],
+    "notes": "US-Iran ceasefire expiry binary event day",
+    "publish_ts": 1776859200000,
+    "actual_outcome": {
+      "candles_fetched": 601,
+      "price_range": [
+        74943.7,
+        82842.0
+      ],
+      "entry_hit": true,
+      "entry_hit_time": "2026-04-23T00:00:00+00:00",
+      "outcome": "TP_HIT(80000)",
+      "exit_price": 80000,
+      "exit_time": "2026-05-04T02:00:00+00:00",
+      "actual_entry_price_used": 77400.0,
+      "is_short": false,
+      "pnl_pct": 3.359
+    },
+    "source_url": "https://www.capitalstreetfx.com/trade-idea/bitcoin-btc-usd-trade-idea-april-22-2026/",
+    "verification": "source page/date/levels found via web search; outcome independently calculated candle-by-candle in archived dataset"
+  },
+  {
+    "id": 5,
+    "symbol": "BTC/USDT",
+    "source": "CapitalStreetFX",
+    "publish_date": "2026-04-14",
+    "publish_time_utc": "08:30",
+    "human_bias": "LONG (cautious)",
+    "entry": [
+      73000,
+      74500
+    ],
+    "sl": 69000,
+    "tp": [
+      75296,
+      78903
+    ],
+    "notes": "PPI data day, 0.5 Fib breakout watch",
+    "publish_ts": 1776155400000,
+    "actual_outcome": {
+      "candles_fetched": 600,
+      "price_range": [
+        73302.8,
+        82842.0
+      ],
+      "entry_hit": true,
+      "entry_hit_time": "2026-04-14T09:00:00+00:00",
+      "outcome": "TP_HIT(75296)",
+      "exit_price": 75296,
+      "exit_time": "2026-04-14T13:00:00+00:00",
+      "actual_entry_price_used": 73750.0,
+      "is_short": false,
+      "pnl_pct": 2.096
+    },
+    "source_url": "https://www.capitalstreetfx.com/trade-idea/bitcoin-btc-usd-trade-idea/",
+    "verification": "source page/date/levels found via web search; outcome independently calculated candle-by-candle in archived dataset"
+  },
+  {
+    "id": 6,
+    "symbol": "ETH/USDT",
+    "source": "CapitalStreetFX",
+    "publish_date": "2026-03-06",
+    "publish_time_utc": "08:30",
+    "human_bias": "LONG (contrarian bounce)",
+    "entry": [
+      2030,
+      2065
+    ],
+    "sl": 1980,
+    "tp": [
+      2135,
+      2200
+    ],
+    "notes": "NFP day, extreme fear bounce setup",
+    "publish_ts": 1772785800000,
+    "actual_outcome": {
+      "candles_fetched": 600,
+      "price_range": [
+        1910.0,
+        2387.23
+      ],
+      "entry_hit": true,
+      "entry_hit_time": "2026-03-06T09:00:00+00:00",
+      "outcome": "SL_HIT",
+      "exit_price": 1980,
+      "exit_time": "2026-03-06T14:00:00+00:00",
+      "actual_entry_price_used": 2047.5,
+      "is_short": false,
+      "pnl_pct": -3.297
+    },
+    "source_url": "https://www.capitalstreetfx.com/ethereum-eth-trade-idea-march-6-2026-technical-analysis-entry-stop-loss-take-profit/",
+    "verification": "source page/date/levels found via web search; outcome independently calculated candle-by-candle in archived dataset"
+  },
+  {
+    "id": 8,
+    "symbol": "ETH/USDT",
+    "source": "CapitalStreetFX",
+    "publish_date": "2026-05-08",
+    "publish_time_utc": "06:33",
+    "human_bias": "LONG (cautious, compression breakout)",
+    "entry": [
+      2250,
+      2300
+    ],
+    "sl": 2180,
+    "tp": [
+      2380,
+      2450,
+      2550
+    ],
+    "notes": "NFP day, MA cluster compression",
+    "publish_ts": 1778221980000,
+    "actual_outcome": {
+      "candles_fetched": 600,
+      "price_range": [
+        1956.42,
+        2382.99
+      ],
+      "entry_hit": true,
+      "entry_hit_time": "2026-05-08T07:00:00+00:00",
+      "outcome": "TP_HIT(2380)",
+      "exit_price": 2380,
+      "exit_time": "2026-05-10T23:00:00+00:00",
+      "actual_entry_price_used": 2275.0,
+      "is_short": false,
+      "pnl_pct": 4.615
+    },
+    "source_url": "https://www.capitalstreetfx.com/trade-idea/ethereum-eth-usd-trade-setup-may-8-2026/",
+    "verification": "source page/date/levels found via web search; outcome independently calculated candle-by-candle in archived dataset"
+  },
+  {
+    "id": 10,
+    "symbol": "ETH/USDT",
+    "source": "CapitalStreetFX",
+    "publish_date": "2026-03-12",
+    "publish_time_utc": "13:30",
+    "human_bias": "LONG (cautious, demand zone)",
+    "entry": [
+      1960,
+      2010
+    ],
+    "sl": 1895,
+    "tp": [
+      2123,
+      2200
+    ],
+    "notes": "PPI+jobless claims day, 6 red monthly candles",
+    "publish_ts": 1773322200000,
+    "actual_outcome": {
+      "candles_fetched": 600,
+      "price_range": [
+        1938.36,
+        2387.23
+      ],
+      "entry_hit": true,
+      "entry_hit_time": "2026-03-27T10:00:00+00:00",
+      "outcome": "TP_HIT(2123)",
+      "exit_price": 2123,
+      "exit_time": "2026-03-31T17:00:00+00:00",
+      "actual_entry_price_used": 1985.0,
+      "is_short": false,
+      "pnl_pct": 6.952
+    },
+    "source_url": "https://www.capitalstreetfx.com/crypto-market-analysis-march-12-2026-btc-%C2%B7-eth-%C2%B7-xrp-%C2%B7-sol-capital-street-fx/",
+    "verification": "source page/date/levels found via web search; outcome independently calculated candle-by-candle in archived dataset"
+  },
+  {
+    "id": 11,
+    "symbol": "BTC/USDT",
+    "source": "CapitalStreetFX",
+    "publish_date": "2026-06-24",
+    "publish_time_utc": "12:00",
+    "human_bias": "SHORT (primary, high confidence)",
+    "entry": [
+      63200,
+      63800
+    ],
+    "sl": 65100,
+    "tp": [
+      60500,
+      59239,
+      56900
+    ],
+    "notes": "Extreme fear 20, ETF outflows $3B streak",
+    "publish_ts": 1782302400000,
+    "actual_outcome": {
+      "candles_fetched": 267,
+      "price_range": [
+        57809.4,
+        63469.3
+      ],
+      "entry_hit": true,
+      "entry_hit_time": "2026-07-04T17:00:00+00:00",
+      "outcome": "NEITHER_HIT_WITHIN_WINDOW",
+      "exit_price": 62729.9,
+      "exit_time": "2026-07-05T14:00:00+00:00",
+      "actual_entry_price_used": 63500.0,
+      "is_short": true,
+      "pnl_pct": 1.213
+    },
+    "source_url": "https://www.capitalstreetfx.com/trade-idea/bitcoin-btc-usd-trade-setup-market-analysis/",
+    "verification": "source page/date/levels found via web search; outcome independently calculated candle-by-candle in archived dataset"
+  },
+  {
+    "id": 12,
+    "symbol": "BTC/USDT",
+    "source": "CapitalStreetFX",
+    "publish_date": "2026-06-15",
+    "publish_time_utc": "18:14",
+    "human_bias": "LONG (counter-trend, conditional on FOMC)",
+    "entry": [
+      64200,
+      65800
+    ],
+    "sl": 62500,
+    "tp": [
+      68124,
+      70958
+    ],
+    "notes": "Pre-FOMC June 16-17, oversold bounce",
+    "publish_ts": 1781547240000,
+    "actual_outcome": {
+      "candles_fetched": 476,
+      "price_range": [
+        57809.4,
+        66994.9
+      ],
+      "entry_hit": true,
+      "entry_hit_time": "2026-06-16T02:00:00+00:00",
+      "outcome": "SL_HIT",
+      "exit_price": 62500,
+      "exit_time": "2026-06-18T15:00:00+00:00",
+      "actual_entry_price_used": 65000.0,
+      "is_short": false,
+      "pnl_pct": -3.846
+    },
+    "source_url": "https://www.capitalstreetfx.com/trade-idea/bitcoin-btc-usd-trade-setup-june-15-2026/",
+    "verification": "source page/date/levels found via web search; outcome independently calculated candle-by-candle in archived dataset"
+  },
+  {
+    "id": 14,
+    "symbol": "BTC/USDT",
+    "source": "CapitalStreetFX",
+    "publish_date": "2026-05-05",
+    "publish_time_utc": "06:41",
+    "human_bias": "LONG (cautiously bullish, primary)",
+    "entry": [
+      79200,
+      80400
+    ],
+    "sl": 76800,
+    "tp": [
+      83522,
+      86000,
+      91117
+    ],
+    "notes": "$80K reclaim, Fib 0.618 golden ratio target",
+    "publish_ts": 1777963260000,
+    "actual_outcome": {
+      "candles_fetched": 600,
+      "price_range": [
+        72508.0,
+        82842.0
+      ],
+      "entry_hit": true,
+      "entry_hit_time": "2026-05-07T13:00:00+00:00",
+      "outcome": "SL_HIT",
+      "exit_price": 76800,
+      "exit_time": "2026-05-17T23:00:00+00:00",
+      "actual_entry_price_used": 79800.0,
+      "is_short": false,
+      "pnl_pct": -3.759
+    },
+    "source_url": "https://www.capitalstreetfx.com/market-outlook/bitcoin-btc-usd-trade-setup-may-5-2026/",
+    "verification": "source page/date/levels found via web search; outcome independently calculated candle-by-candle in archived dataset"
+  }
+]
