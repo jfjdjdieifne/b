@@ -288,20 +288,33 @@ class SnapshotAnalyzer:
         timing_ok = bool(session.get("is_executable_window"))
         structure_ok = bias_state == "ALIGNED"
 
-        # A PENDING_SETUP is a scenario, never an order.  No pre-positioning
-        # before a displacement/FVG/LTF confirmation.
-        if chosen.get("status") == "READY" and ltf_confirmed and timing_ok and price_at_zone and structure_ok:
+        # Three distinct states. ORDER_READY is not an unconfirmed watchlist:
+        # every model/structure/time condition passed and a real LIMIT/STOP can
+        # be frozen now, but only a later candle may fill it. This distinction
+        # was missing and caused the walk-forward test to discard all valid
+        # pending orders, often producing zero trades.
+        confirmations_ok = (
+            chosen.get("status") == "READY" and structure_ok
+            and ltf_confirmed and timing_ok
+        )
+        if confirmations_ok and price_at_zone:
             state = "READY_NOW"
-            label = "إعداد مكتمل الآن (راجع يدوياً قبل التنفيذ)"
-            reason = "الانحياز متفق، فريم التنفيذ أكد كسر displacement، السعر عند المنطقة، والنافذة الزمنية فعالة."
+            label = "إعداد مكتمل والسعر عند منطقة التنفيذ"
+            reason = "الانحياز متفق، التأكيد الهيكلي مكتمل، التوقيت صالح، والسعر عند المنطقة."
+        elif confirmations_ok:
+            state = "ORDER_READY"
+            label = "أمر معلّق جاهز — ينتظر السعر فقط"
+            reason = (
+                f"كل شروط النموذج مكتملة. يُجمّد {side} عند {entry_price} الآن، "
+                "ولا يُعتبر دخولاً إلا إذا لمست شمعة لاحقة السعر قبل الإبطال/الانتهاء."
+            )
         else:
             state = "WATCHLIST"
-            label = "مراقبة فقط — ليست توصية دخول الآن"
+            label = "مراقبة فقط — التأكيد غير مكتمل"
             missing = []
             if chosen.get("status") != "READY": missing.append("شروط النموذج ما زالت Pending")
             if not structure_ok: missing.append("4H غير متفق بالكامل مع Daily")
             if not ltf_confirmed: missing.append("لا MSS/BOS حديث مع displacement على فريم التنفيذ")
-            if not price_at_zone: missing.append("السعر ليس عند منطقة الدخول")
             if not timing_ok: missing.append("خارج نافذة التنفيذ لهذا النموذج")
             reason = "؛ ".join(missing) or "تحتاج مراجعة يدوية"
 
@@ -367,8 +380,8 @@ class SnapshotAnalyzer:
                 "quantity": round(qty, 8), "risk_usd": round(risk_usd, 4),
                 "tp1_allocation_pct": tp1_allocation_pct,
                 "expires_at_ms": lifecycle["expires_at_ms"],
-                "activation_allowed": state == "READY_NOW",
-                "status": "watchlist" if state != "READY_NOW" else "pending_entry",
+                "activation_allowed": state in ("READY_NOW", "ORDER_READY"),
+                "status": "pending_entry" if state in ("READY_NOW", "ORDER_READY") else "watchlist",
             },
         }
 

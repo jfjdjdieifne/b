@@ -151,7 +151,8 @@ class WalkForwardBacktester:
             else:
                 decision_counts["DATA_ERROR"] += 1
             candidate = result.get("candidate") if result.get("ok") else None
-            if not candidate or result["decision"]["state"] != "READY_NOW":
+            actionable_states = ("READY_NOW", "ORDER_READY")
+            if not candidate or result["decision"]["state"] not in actionable_states:
                 i += 1; continue
             signals += 1
             expiry = int(candidate["lifecycle"]["expires_at_ms"])
@@ -202,6 +203,22 @@ class WalkForwardBacktester:
 
         wins = sum(1 for t in trades if t["net_pnl"] > 0)
         losses = sum(1 for t in trades if t["net_pnl"] < 0)
+        actionable_count = decision_counts.get("READY_NOW", 0) + decision_counts.get("ORDER_READY", 0)
+        if not trades:
+            zero_trade_diagnosis = {
+                "verdict": "OVERFILTERING_SUSPECTED" if checkpoints >= 100 and actionable_count == 0 else "NO_FILLED_TRADES",
+                "actionable_decisions": actionable_count,
+                "signals_without_fill": no_fills,
+                "top_reasons": dict(rejection_reasons.most_common(10)),
+                "message_ar": (
+                    "لم تمر أي خطة مكتملة من الفلتر؛ راجع أكثر شروط الرفض تكراراً. "
+                    "هذه ليست نتيجة نجاح للبوت، بل إنذار over-filtering."
+                    if actionable_count == 0 else
+                    "وجد أوامر مكتملة لكن لم تُملأ قبل الإبطال/الانتهاء."
+                ),
+            }
+        else:
+            zero_trade_diagnosis = None
         report = {
             "id": f"WFT-{uuid.uuid4().hex[:10]}", "method": "STRICT_WALK_FORWARD_CLOSED_CANDLES",
             "lookahead_prevention": [
@@ -223,6 +240,7 @@ class WalkForwardBacktester:
             "decision_counts": dict(decision_counts), "bias_state_counts": dict(bias_counts),
             "model_status_counts": dict(model_status_counts),
             "top_rejection_reasons": dict(rejection_reasons.most_common(30)),
+            "zero_trade_diagnosis": zero_trade_diagnosis,
             "trade_count": len(trades), "wins": wins, "losses": losses,
             "win_rate": round(wins/len(trades)*100,2) if trades else None,
             "average_r": round(sum(t["realized_r"] for t in trades)/len(trades),3) if trades else None,

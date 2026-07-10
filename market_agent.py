@@ -181,7 +181,7 @@ class MarketAgent:
             self._event("REARM_BLOCKED_BY_COOLDOWN", symbol, analysis["audit_id"])
             return
 
-        if decision == "READY_NOW":
+        if decision in ("READY_NOW", "ORDER_READY"):
             account = self.paper.snapshot()
             risk_capacity_full = account["open_risk_usd"] >= account["balance"] * self.paper.max_total_risk_pct / 100
             if risk_capacity_full:

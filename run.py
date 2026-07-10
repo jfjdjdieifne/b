@@ -64,6 +64,8 @@ def run_backtest():
     )
     print(f"{r['id']} | صفقات {r['trade_count']} | {r['wins']}W/{r['losses']}L | "
           f"${r['initial_balance']} → ${r['final_balance']} ({r['return_pct']}%) | {r['runtime_seconds']}s")
+    if r.get('zero_trade_diagnosis'):
+        print("🚨 تشخيص صفر صفقات:",json.dumps(r['zero_trade_diagnosis'],ensure_ascii=False,indent=2))
     print("أكثر أسباب الرفض:",json.dumps(r.get('top_rejection_reasons',{}),ensure_ascii=False,indent=2))
     print("حُفظ:",r['saved_to'])
 
