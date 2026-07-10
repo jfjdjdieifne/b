@@ -15,6 +15,9 @@ from urllib.parse import urlparse
 from data_manager import DataManager
 from snapshot_analyzer import SnapshotAnalyzer
 from trade_monitor import TradeMonitor
+from paper_account import PaperAccount
+from market_agent import MarketAgent
+from walk_forward_backtest import WalkForwardBacktester
 from user_utils import dual_time
 
 ROOT = Path(__file__).resolve().parent
@@ -22,7 +25,11 @@ WEB_ROOT = ROOT / "web"
 DM = DataManager()
 ANALYZER = SnapshotAnalyzer(DM)
 MONITOR = TradeMonitor(DM)
+PAPER = PaperAccount()
+AGENT = MarketAgent(DM, MONITOR, PAPER)
+WALK_FORWARD = WalkForwardBacktester(DM)
 ANALYSIS_LOCK = threading.Lock()
+BACKTEST_LOCK = threading.Lock()
 
 
 def _default(value):
@@ -69,6 +76,14 @@ class Handler(BaseHTTPRequestHandler):
             })
         if path == "/api/trades":
             return self._json(200, {"ok": True, "trades": MONITOR.list()})
+        if path == "/api/account":
+            PAPER.reconcile(MONITOR.list())
+            return self._json(200, {"ok": True, "account": PAPER.snapshot()})
+        if path == "/api/journal":
+            PAPER.reconcile(MONITOR.list())
+            return self._json(200, {"ok": True, "journal": PAPER.journal_with_scenarios()})
+        if path == "/api/agent":
+            return self._json(200, {"ok": True, "agent": AGENT.status()})
         return self._serve_static(path)
 
     def do_POST(self):
@@ -87,14 +102,47 @@ class Handler(BaseHTTPRequestHandler):
                         execution_timeframe=payload.get("execution_timeframe", "5m"),
                         balance=payload.get("balance", 100),
                         risk_pct=payload.get("risk_pct", 1),
+                        tp1_allocation_pct=payload.get("tp1_allocation_pct", 50),
                     )
                 finally:
                     ANALYSIS_LOCK.release()
                 return self._json(200 if result.get("ok") else 502, result)
+            if path == "/api/backtest":
+                if not BACKTEST_LOCK.acquire(blocking=False):
+                    return self._json(409, {"ok": False, "error_ar": "يوجد اختبار زمني قيد التنفيذ."})
+                try:
+                    report = WALK_FORWARD.run(
+                        symbol=payload.get("symbol", "ETH/USDT"),
+                        start=payload.get("start"), end=payload.get("end"),
+                        exchange=payload.get("exchange", "binance"),
+                        execution_timeframe=payload.get("execution_timeframe", "5m"),
+                        initial_balance=payload.get("initial_balance", 100),
+                        risk_pct=payload.get("risk_pct", 1),
+                        fee_bps=payload.get("fee_bps", 10),
+                        slippage_bps=payload.get("slippage_bps", 2),
+                        tp1_allocation_pct=payload.get("tp1_allocation_pct", 50),
+                    )
+                finally:
+                    BACKTEST_LOCK.release()
+                return self._json(200, {"ok": True, "report": report})
             if path == "/api/trades":
-                return self._json(201, {"ok": True, "trade": MONITOR.add(payload)})
+                analysis = payload.pop("analysis", None)
+                trade = MONITOR.add(payload)
+                PAPER.register_plan(trade, analysis=analysis, auto=bool(payload.get("auto_discovered")))
+                return self._json(201, {"ok": True, "trade": trade, "account": PAPER.snapshot()})
             if path == "/api/trades/refresh":
-                return self._json(200, {"ok": True, **MONITOR.refresh_all()})
+                report = MONITOR.refresh_all()
+                account = PAPER.reconcile(MONITOR.list())
+                return self._json(200, {"ok": True, **report, "account": account})
+            if path == "/api/account/reset":
+                return self._json(200, {"ok": True, "account": PAPER.reset(payload.get("initial_balance", 100))})
+            if path == "/api/journal/scenario":
+                result = PAPER.set_scenario(payload.get("trade_id"), payload.get("capital"), payload.get("risk_pct"))
+                return self._json(200, {"ok": True, "scenario": result})
+            if path == "/api/agent/start":
+                return self._json(200, {"ok": True, "agent": AGENT.start(**payload)})
+            if path == "/api/agent/stop":
+                return self._json(200, {"ok": True, "agent": AGENT.stop()})
             parts = [p for p in path.split("/") if p]
             if len(parts) == 4 and parts[:2] == ["api", "trades"]:
                 trade_id, action = parts[2], parts[3]
@@ -103,7 +151,9 @@ class Handler(BaseHTTPRequestHandler):
                 if action == "cancel":
                     return self._json(200, {"ok": True, "trade": MONITOR.cancel(trade_id)})
                 if action == "refresh":
-                    return self._json(200, {"ok": True, "trade": MONITOR.refresh(trade_id)})
+                    trade = MONITOR.refresh(trade_id)
+                    account = PAPER.reconcile(MONITOR.list())
+                    return self._json(200, {"ok": True, "trade": trade, "account": account})
             return self._json(404, {"ok": False, "error_ar": "المسار غير موجود"})
         except KeyError as exc:
             return self._json(404, {"ok": False, "error_ar": str(exc)})

@@ -381,6 +381,72 @@ class DataManager:
     def get_last_fetch_report(self) -> dict[str, Any]:
         return dict(self.last_fetch_report)
 
+    def get_market_universe(self, exchange="binance", limit=15, quote="USDT"):
+        """Rank liquid spot pairs by reported 24h quote turnover.
+
+        ICT has no official list of best crypto coins. This is an objective
+        liquidity universe so the scanner avoids thin/meme microcaps; it is not
+        a prediction that the returned assets will rise.
+        """
+        exchange = self.normalize_exchange(exchange)
+        if exchange == "auto":
+            exchange = "binance"
+        quote = quote.upper()
+        rows = []
+        try:
+            if exchange in ("binance", "mexc"):
+                base_url = self.binance_base if exchange == "binance" else self.mexc_base
+                payload = self._json_or_error(self.session.get(f"{base_url}/api/v3/ticker/24hr", timeout=20), exchange)
+                for x in payload if isinstance(payload, list) else []:
+                    sym = x.get("symbol", "")
+                    if sym.endswith(quote):
+                        rows.append((sym[:-len(quote)], float(x.get("quoteVolume") or 0)))
+            elif exchange == "okx":
+                payload = self._json_or_error(self.session.get(
+                    f"{self.okx_base}/api/v5/market/tickers", params={"instType": "SPOT"}, timeout=20
+                ), "OKX")
+                for x in payload.get("data", []):
+                    inst = x.get("instId", "")
+                    if inst.endswith("-" + quote):
+                        rows.append((inst.rsplit("-", 1)[0], float(x.get("volCcy24h") or 0)))
+            elif exchange == "kucoin":
+                payload = self._json_or_error(self.session.get(f"{self.kucoin_base}/api/v1/market/allTickers", timeout=20), "KuCoin")
+                for x in payload.get("data", {}).get("ticker", []):
+                    sym = x.get("symbol", "")
+                    if sym.endswith("-" + quote):
+                        rows.append((sym.rsplit("-", 1)[0], float(x.get("volValue") or 0)))
+            elif exchange == "gate":
+                payload = self._json_or_error(self.session.get(f"{self.gate_base}/api/v4/spot/tickers", timeout=20), "Gate.io")
+                for x in payload if isinstance(payload, list) else []:
+                    sym = x.get("currency_pair", "")
+                    if sym.endswith("_" + quote):
+                        rows.append((sym.rsplit("_", 1)[0], float(x.get("quote_volume") or 0)))
+            elif exchange == "bybit":
+                payload = self._json_or_error(self.session.get(
+                    f"{self.bybit_base}/v5/market/tickers", params={"category": "spot"}, timeout=20
+                ), "Bybit")
+                for x in payload.get("result", {}).get("list", []):
+                    sym = x.get("symbol", "")
+                    if sym.endswith(quote):
+                        rows.append((sym[:-len(quote)], float(x.get("turnover24h") or 0)))
+        except Exception as exc:
+            self.logger.warning("Universe ranking failed on %s: %s", exchange, exc)
+
+        stable_bases = {"USDC", "FDUSD", "TUSD", "USDP", "DAI", "EUR", "TRY", "BRL", "BUSD"}
+        def allowed(base):
+            return (base not in stable_bases
+                    and not any(base.endswith(suffix) for suffix in ("UP", "DOWN", "BULL", "BEAR", "2L", "2S", "3L", "3S")))
+        ranked = sorted(((b, v) for b, v in rows if allowed(b)), key=lambda x: x[1], reverse=True)
+        if not ranked:
+            fallback = [self.normalize_symbol(x) for x in Config.SCAN_SYMBOLS]
+            return {"exchange": exchange, "basis": "STATIC_LARGE_CAP_FALLBACK", "symbols": fallback[:limit]}
+        return {
+            "exchange": exchange,
+            "basis": "24H_REPORTED_QUOTE_TURNOVER",
+            "symbols": [f"{base}/{quote}" for base, _ in ranked[:max(1, int(limit))]],
+            "ranked": [{"symbol": f"{base}/{quote}", "quote_volume_24h": volume} for base, volume in ranked[:max(1, int(limit))]],
+        }
+
     def get_multi_timeframe(self, symbol=None, timeframe=None, exchange: str | None = None):
         """Backward-compatible MTF bundle pinned to one exchange.
 
@@ -553,6 +619,87 @@ class DataManager:
                 "l": row["Low"], "c": row["Close"], "v": row["Volume"],
             })
         return self._finalize_rows(rows, symbol, timeframe, "yahoo", limit, closed_only)
+
+    # ------------------------------------------------------------------
+    # Historical ranges (walk-forward backtests)
+    # ------------------------------------------------------------------
+    def get_historical_ohlcv(self, symbol, timeframe, start_ms, end_ms, exchange="binance"):
+        """Fetch a closed historical range without future candles.
+
+        Binance/MEXC paginate forward; OKX paginates backward. Public data
+        only. Other venues deliberately raise instead of silently switching.
+        """
+        symbol = self.normalize_symbol(symbol)
+        timeframe = self.normalize_timeframe(timeframe)
+        exchange = self.normalize_exchange(exchange)
+        start_ms, end_ms = int(start_ms), int(end_ms)
+        if not 0 < start_ms < end_ms:
+            raise DataManagerError("نطاق التاريخ غير صالح")
+        rows = []
+        if exchange in ("binance", "mexc"):
+            base = self.binance_base if exchange == "binance" else self.mexc_base
+            interval = self._convert_tf_binance(timeframe)
+            cursor = start_ms
+            step = self.TF_SECONDS[timeframe] * 1000
+            while cursor <= end_ms:
+                resp = self.session.get(
+                    f"{base}/api/v3/klines",
+                    params={"symbol": self._compact_symbol(symbol), "interval": interval,
+                            "startTime": cursor, "endTime": end_ms, "limit": 1000}, timeout=20,
+                )
+                payload = self._json_or_error(resp, exchange)
+                if not isinstance(payload, list) or not payload: break
+                for x in payload:
+                    rows.append({"ts": x[0], "o": x[1], "h": x[2], "l": x[3], "c": x[4], "v": x[5],
+                                 "close_ts": x[6], "trades": x[8] if len(x)>8 else 0,
+                                 "taker": x[9] if len(x)>9 else 0, "taker_quote": x[10] if len(x)>10 else 0})
+                next_cursor = int(payload[-1][0]) + step
+                if next_cursor <= cursor: break
+                cursor = next_cursor
+                if len(payload) < 1000: break
+                time.sleep(0.08)
+        elif exchange == "okx":
+            after = end_ms + self.TF_SECONDS[timeframe] * 1000
+            bar = self._convert_tf_okx(timeframe)
+            while True:
+                resp = self.session.get(
+                    f"{self.okx_base}/api/v5/market/history-candles",
+                    params={"instId": self._dash_symbol(symbol), "bar": bar, "after": after, "limit": 100},
+                    timeout=20,
+                )
+                payload = self._json_or_error(resp, "OKX")
+                if payload.get("code") != "0": raise DataManagerError(f"OKX: {payload.get('msg')}")
+                batch = payload.get("data") or []
+                if not batch: break
+                for x in batch:
+                    ts = int(x[0])
+                    if start_ms <= ts <= end_ms:
+                        rows.append({"ts": ts, "o": x[1], "h": x[2], "l": x[3], "c": x[4], "v": x[5],
+                                     "closed": str(x[8]) == "1" if len(x)>8 else True})
+                oldest = int(batch[-1][0])
+                if oldest <= start_ms: break
+                after = oldest
+                time.sleep(0.1)
+        else:
+            raise DataManagerError(
+                f"الباك تست الزمني يدعم حالياً Binance وMEXC وOKX، وليس {exchange}. لا تبديل صامت."
+            )
+        data = self._finalize_rows(rows, symbol, timeframe, exchange, 0, True)
+        if not data: return None
+        keep = [i for i, ts in enumerate(data["timestamps"]) if start_ms <= ts <= end_ms]
+        if not keep: return None
+        first, last = keep[0], keep[-1]
+        return self._slice_indices(data, first, last)
+
+    @staticmethod
+    def _slice_indices(data, first, last):
+        fields = ("timestamps", "close_timestamps", "opens", "highs", "lows", "closes", "volumes",
+                  "num_trades", "taker_buy_volumes", "taker_buy_quote_volumes", "buy_sell_ratio")
+        out = dict(data)
+        for field in fields:
+            if field in data: out[field] = data[field][first:last+1]
+        out["count"] = last-first+1
+        return out
 
     # ------------------------------------------------------------------
     # Historical cut-off compatibility

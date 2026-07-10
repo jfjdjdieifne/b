@@ -1,0 +1,3 @@
+requests>=2.31.0
+python-dotenv>=1.0.1
+# Install NumPy from Termux packages: pkg install python-numpy

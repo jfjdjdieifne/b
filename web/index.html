@@ -32,7 +32,10 @@
 
     <nav class="tabs" aria-label="أقسام التطبيق">
       <button class="tab active" data-tab="analysis">التحليل</button>
+      <button class="tab" data-tab="market">تحليل السوق 24/7</button>
+      <button class="tab" data-tab="backtest">اختبار فترة</button>
       <button class="tab" data-tab="trades">متابعة الصفقات <span id="tradeCount" class="count">0</span></button>
+      <button class="tab" data-tab="account">الحساب التجريبي <span id="accountBalance" class="count">$100</span></button>
       <button class="tab" data-tab="guide">كيف يعمل؟</button>
     </nav>
 
@@ -45,6 +48,7 @@
         </label>
         <label><span>رأس المال $</span><input id="balance" type="number" value="100" min="1" step="0.01"></label>
         <label><span>المخاطرة %</span><input id="risk" type="number" value="1" min="0.1" max="5" step="0.1"></label>
+        <label><span>إغلاق TP1 %</span><select id="tp1Allocation"><option value="50">50% — مثال مايكل</option><option value="80">80% — محافظ</option><option value="100">100% — بلا Runner</option></select></label>
         <button id="analyzeBtn" class="primary" type="submit"><span>حلّل الآن</span><b>←</b></button>
       </form>
       <div class="form-note">لا تحتاج أن تختار كل الفريمات. البوت يغلق التسلسل تلقائياً: <b>1D ← 4H ← 15m ← تنفيذ</b>.</div>
@@ -53,10 +57,52 @@
       <div id="analysisResult"></div>
     </section>
 
+    <section id="marketTab" class="panel tab-panel">
+      <div class="section-head"><div><span class="eyebrow">AUTONOMOUS PAPER SCANNER</span><h2>تحليل السوق 24/7</h2></div><span id="agentBadge" class="status">متوقف</span></div>
+      <p class="muted">يرتب أزواج Spot حسب سيولة 24 ساعة، يحلل 1D/4H/15m/Entry، يراقب أي setup محتمل، ويلغي الفكرة إذا فشلت. الدخول ورقي فقط وعلى شمعة لاحقة — لا أوامر منصة حقيقية.</p>
+      <div class="analysis-form" style="margin-top:18px">
+        <label><span>المنصة</span><select id="agentExchange"><option>binance</option><option>okx</option><option>kucoin</option><option>gate</option><option>bybit</option><option>mexc</option></select></label>
+        <label><span>فريم التنفيذ</span><select id="agentTf"><option>5m</option><option>3m</option><option>1m</option></select></label>
+        <label><span>عدد الأزواج الأكثر سيولة</span><input id="agentUniverse" type="number" value="12" min="1" max="30"></label>
+        <label><span>كل كم دقيقة</span><input id="agentInterval" type="number" value="5" min="1"></label>
+        <label><span>المخاطرة %</span><input id="agentRisk" type="number" value="1" min="0.1" max="5" step="0.1"></label>
+        <label><span>إغلاق TP1 %</span><select id="agentAllocation"><option value="50">50%</option><option value="80">80%</option><option value="100">100%</option></select></label>
+        <button id="startAgent" class="primary">ابدأ 24/7</button>
+      </div>
+      <div class="actions"><button id="stopAgent" class="ghost">إيقاف</button><button id="refreshAgent" class="ghost">تحديث الحالة</button></div>
+      <div id="agentSummary" class="result-top"></div>
+      <div id="agentResults" class="model-table"></div>
+    </section>
+
+    <section id="backtestTab" class="panel tab-panel">
+      <div class="section-head"><div><span class="eyebrow">STRICT WALK-FORWARD</span><h2>اختبار فترة بلا نظر للمستقبل</h2></div></div>
+      <p class="muted">عند كل نقطة يرى البوت الشموع المغلقة حتى تلك اللحظة فقط. يجمد الخطة، ثم يكشف الشموع اللاحقة لمعرفة Entry/TP/SL. يحتسب الرسوم والانزلاق ويبدأ من الرصيد الذي تختاره.</p>
+      <div class="analysis-form" style="margin-top:18px">
+        <label><span>الزوج</span><input id="btSymbol" value="ETH/USDT"></label>
+        <label><span>المنصة</span><select id="btExchange"><option>binance</option><option>mexc</option><option>okx</option></select></label>
+        <label><span>من</span><input id="btStart" type="date"></label>
+        <label><span>إلى</span><input id="btEnd" type="date"></label>
+        <label><span>الرصيد $</span><input id="btBalance" type="number" value="100"></label>
+        <label><span>المخاطرة %</span><input id="btRisk" type="number" value="1" step="0.1"></label>
+        <label><span>إغلاق TP1 %</span><select id="btAllocation"><option value="50">50%</option><option value="80">80%</option><option value="100">100%</option></select></label>
+        <button id="runBacktest" class="primary">ابدأ الاختبار</button>
+      </div>
+      <div id="backtestLoading" class="loading hidden"><span></span><div><b>Walk-forward قيد التنفيذ…</b><small>قد يستغرق عدة دقائق حسب الفترة؛ لا توجد شمعة مستقبلية داخل التحليل.</small></div></div>
+      <div id="backtestResult"></div>
+    </section>
+
     <section id="tradesTab" class="panel tab-panel">
       <div class="section-head"><div><span class="eyebrow">AUTO MONITOR</span><h2>الصفقات المتابعة</h2></div><button id="refreshTrades" class="ghost">تحديث الكل</button></div>
-      <p class="muted">تحديث بضغطة واحدة: دخول ← TP1 يغلق 50% وينقل الستوب للتعادل ← TP2 أو ملاحقة HL/LH. التطبيق لا يرسل أوامر مالية للمنصة.</p>
+      <p class="muted">تحديث بضغطة واحدة: دخول ← TP1 يغلق النسبة المختارة وينقل الستوب للتعادل إن بقي Runner ← TP2 أو ملاحقة HL/LH. التطبيق لا يرسل أوامر مالية للمنصة.</p>
       <div id="tradesList" class="trades-grid"></div>
+    </section>
+
+    <section id="accountTab" class="panel tab-panel">
+      <div class="section-head"><div><span class="eyebrow">PAPER ACCOUNT — NO REAL ORDERS</span><h2>محاكاة رصيد حقيقي $100</h2></div><button id="resetAccount" class="ghost">إعادة ضبط الرصيد</button></div>
+      <p class="muted">الحساب ورقي لكنه يتعامل مع الرصيد والمخاطرة بجدية، بلا رافعة مخفية. لا يتصل بحساب منصة ولا يرسل أوامر مالية.</p>
+      <div id="accountSummary" class="result-top"></div>
+      <div class="section-head" style="margin-top:25px"><div><h2>لوغ الصفقات الكامل</h2><p class="muted">غيّر رأس المال ونسبة المخاطرة لكل صفقة لرؤية سيناريو بديل؛ السجل الأصلي لا يتغير.</p></div></div>
+      <div id="journalList" class="trades-grid"></div>
     </section>
 
     <section id="guideTab" class="panel tab-panel prose">
@@ -75,5 +121,8 @@
   </main>
   <footer>أداة تعليمية وليست نصيحة مالية. التداول يحمل احتمال خسارة رأس المال.</footer>
   <script src="/app.js"></script>
+  <script src="/account.js"></script>
+  <script src="/market.js"></script>
+  <script src="/backtest.js"></script>
 </body>
 </html>

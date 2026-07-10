@@ -17,6 +17,9 @@ from config import Config
 from data_manager import DataManager
 from snapshot_analyzer import SnapshotAnalyzer
 from trade_monitor import TradeMonitor
+from paper_account import PaperAccount
+from market_agent import MarketAgent
+from walk_forward_backtest import WalkForwardBacktester
 
 
 class TelegramBot:
@@ -29,6 +32,9 @@ class TelegramBot:
         self.dm = DataManager()
         self.analyzer = SnapshotAnalyzer(self.dm)
         self.monitor = TradeMonitor(self.dm)
+        self.paper = PaperAccount()
+        self.agent = MarketAgent(self.dm, self.monitor, self.paper)
+        self.backtester = WalkForwardBacktester(self.dm)
         self.last_analysis = {}
         self._last_auto_refresh = 0.0
 
@@ -82,8 +88,18 @@ class TelegramBot:
         if text.startswith("/trades"):
             return self.show_trades(chat_id)
         if text.startswith("/refresh"):
-            self.monitor.refresh_all()
+            self.monitor.refresh_all(); self.paper.reconcile(self.monitor.list())
             return self.show_trades(chat_id)
+        if text.startswith("/market_on"):
+            parts=text.split(); exchange=parts[1] if len(parts)>1 else "binance"
+            self.agent.start(exchange=exchange, notification_chat_id=chat_id)
+            return self.send(chat_id, "✅ تحليل السوق الورقي 24/7 بدأ، وستصلك إشعارات Entry/TP/SL.")
+        if text.startswith("/market_off"):
+            self.agent.stop(); return self.send(chat_id, "⏸ تم إيقاف تحليل السوق.")
+        if text.startswith("/account"):
+            return self.show_account(chat_id)
+        if text.startswith("/backtest"):
+            return self.run_backtest(chat_id, text)
         if text.startswith("/platforms"):
             return self.send(chat_id, "المنصات: auto, okx, binance, kucoin, gate, bybit, mexc")
         self.help(chat_id)
@@ -93,10 +109,14 @@ class TelegramBot:
             chat_id,
             "مرصد السوق — أوامر سريعة\n\n"
             "/analyze ETH/USDT okx 5m — تحليل 1D/4H/15m/5m من OKX\n"
-            "/trades — الصفقات المتابعة\n/refresh — تحديثها كلها\n/platforms — المنصات\n\n"
+            "/trades — الصفقات المتابعة\n/refresh — تحديثها كلها\n"
+            "/market_on binance — تحليل السوق 24/7\n/market_off — إيقافه\n"
+            "/account — حساب المحاكاة $100\n"
+            "/backtest ETH/USDT 2026-06-10 2026-07-10 binance\n/platforms — المنصات\n\n"
             "الفريم الأخير فقط للتنفيذ (1m/3m/5m). كل الشموع مغلقة. Pending للمراقبة وليس أمراً.",
             [[{"text": "تحليل ETH الآن", "callback_data": "analyze:ETH/USDT:auto:5m"}],
-             [{"text": "تحديث الصفقات", "callback_data": "refresh_all"}]],
+             [{"text": "▶️ تحليل السوق 24/7", "callback_data": "market_on"}, {"text": "⏹ إيقاف", "callback_data": "market_off"}],
+             [{"text": "💵 الحساب التجريبي", "callback_data": "account"}, {"text": "تحديث الصفقات", "callback_data": "refresh_all"}]],
         )
 
     def analyze(self, chat_id, text):
@@ -131,7 +151,7 @@ class TelegramBot:
             for target in c["targets"]:
                 lines.append(f"🎯 {target['name']} {target['price']} | {target['allocation_pct']}% | R={target.get('rr')}")
             if c.get("runner"):
-                lines.append("🏃 50% Runner: trailing HL/LH بعد TP1؛ لا يوجد TP2 رقمي موثق")
+                lines.append(f"🏃 {c['runner']['allocation_pct']}% Runner: trailing HL/LH بعد TP1؛ لا يوجد TP2 رقمي موثق")
         lines += ["", "تفصيل الفريمات:"]
         for tf in ("1d", "4h", "15m", a["execution_timeframe"]):
             f = a["frames"][tf]
@@ -158,24 +178,31 @@ class TelegramBot:
                 tracking_payload = dict(result["candidate"]["tracking_payload"])
                 tracking_payload["notification_chat_id"] = chat_id
                 trade = self.monitor.add(tracking_payload)
-                return self.send(chat_id, f"✅ أضيفت {trade['id']} كمراقبة. فعّلها فقط بعد مراجعة التأكيد.",
-                                 [[{"text": "تفعيل انتظار الدخول", "callback_data": f"activate:{trade['id']}"}],
-                                  [{"text": "عرض الصفقات", "callback_data": "show_trades"}]])
+                self.paper.register_plan(trade, result, auto=False)
+                return self.send(chat_id, f"✅ أضيفت {trade['id']} للمراقبة. لن تتفعل حتى تصبح READY بإعادة تحليل حديثة، وستنتهي تلقائياً.",
+                                 [[{"text": "عرض الصفقات", "callback_data": "show_trades"}]])
             except Exception as exc:
                 return self.send(chat_id, f"❌ {exc}")
         if data.startswith("activate:"):
-            trade = self.monitor.activate(data.split(":", 1)[1])
-            return self.send(chat_id, f"✅ {trade['id']} الآن بانتظار لمس الدخول.")
+            return self.send(chat_id, "التفعيل اليدوي لـPending أُلغي؛ الوكيل يفعّلها فقط بعد READY حديثة.")
         if data == "refresh_all":
             self.monitor.refresh_all()
             return self.show_trades(chat_id)
         if data == "show_trades":
             return self.show_trades(chat_id)
+        if data == "market_on":
+            self.agent.start(notification_chat_id=chat_id)
+            return self.send(chat_id, "✅ تحليل السوق الورقي 24/7 بدأ، وستصلك إشعاراته.")
+        if data == "market_off":
+            self.agent.stop(); return self.send(chat_id, "⏸ تم إيقاف تحليل السوق.")
+        if data == "account":
+            return self.show_account(chat_id)
 
     def auto_refresh_notify(self):
         """Refresh active trades and push only newly-created state events."""
         before = {t["id"]: len(t.get("events", [])) for t in self.monitor.list()}
         self.monitor.refresh_all()
+        self.paper.reconcile(self.monitor.list())
         for trade in self.monitor.list():
             chat_id = trade.get("notification_chat_id")
             if not chat_id:
@@ -191,6 +218,35 @@ class TelegramBot:
                     f"الحالة: {trade['status']} | SL: {trade['current_stop_loss']} | المتبقي: {trade['remaining_pct']}%\n"
                     f"NY: {stamp.get('new_york', '')}\nدمشق: {stamp.get('damascus', '')}",
                 )
+
+    def show_account(self, chat_id):
+        self.paper.reconcile(self.monitor.list())
+        a = self.paper.snapshot()
+        self.send(chat_id,
+            f"💵 حساب المحاكاة فقط\nالرصيد الابتدائي: ${a['initial_balance']}\n"
+            f"الرصيد الحالي: ${a['balance']}\nالربح المحقق: ${a['realized_pnl']} ({a['return_pct']}%)\n"
+            f"المخاطرة المفتوحة: ${a['open_risk_usd']}\n"
+            f"الصفقات المسجلة: {len(a['journal'])}\n\nلا توجد أوامر مالية حقيقية.")
+
+    def run_backtest(self, chat_id, text):
+        parts = text.split()
+        if len(parts) < 4:
+            return self.send(chat_id, "الصيغة: /backtest ETH/USDT 2026-06-10 2026-07-10 binance")
+        symbol, start, end = parts[1:4]
+        exchange = parts[4] if len(parts) > 4 else "binance"
+        self.send(chat_id, "⏳ بدأ Walk-forward بلا look-ahead. قد يستغرق عدة دقائق…")
+        try:
+            r = self.backtester.run(symbol, start, end, exchange=exchange,
+                                    initial_balance=self.paper.snapshot()['balance'],
+                                    risk_pct=Config.PAPER_DEFAULT_RISK_PCT)
+            self.send(chat_id,
+                f"🧪 {r['id']}\n{r['symbol']} | {r['trade_count']} صفقة | {r['wins']} ربح / {r['losses']} خسارة\n"
+                f"الرصيد: ${r['initial_balance']} → ${r['final_balance']}\n"
+                f"الصافي: ${r['net_pnl']} ({r['return_pct']}%) | متوسط {r['average_r']}R\n"
+                f"Signals={r['signals']} | No fills={r['no_fills']}\n"
+                "⚠️ نتيجة افتراضية وليست ضماناً للأداء المستقبلي.")
+        except Exception as exc:
+            self.send(chat_id, f"❌ فشل الاختبار: {exc}")
 
     def show_trades(self, chat_id):
         trades = self.monitor.list()

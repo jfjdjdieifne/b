@@ -18,7 +18,7 @@ from data_manager import DataManager
 from user_utils import dual_time, parse_price
 
 
-FINAL_STATES = {"stopped", "tp2_hit", "closed", "cancelled"}
+FINAL_STATES = {"stopped", "tp2_hit", "closed", "cancelled", "expired", "invalidated"}
 
 
 class TradeMonitor:
@@ -63,6 +63,9 @@ class TradeMonitor:
         if tp2 is not None and ((is_long and tp2 <= tp1) or (not is_long and tp2 >= tp1)):
             raise ValueError("TP2 يجب أن يكون أبعد من TP1 باتجاه الصفقة")
 
+        allocation = float(payload.get("tp1_allocation_pct") or Config.TP1_ALLOCATION_PCT)
+        if not 1 <= allocation <= 100:
+            raise ValueError("نسبة TP1 يجب أن تكون بين 1 و100%")
         requested_status = str(payload.get("status") or "watchlist").lower()
         status = requested_status if requested_status in ("watchlist", "pending_entry", "active") else "watchlist"
         now = dual_time()
@@ -72,11 +75,13 @@ class TradeMonitor:
             "exchange": self.dm.normalize_exchange(payload["exchange"]),
             "timeframe": self.dm.normalize_timeframe(payload["timeframe"]),
             "side": side,
+            "model": payload.get("model"),
             "entry": entry,
             "initial_stop_loss": sl,
             "current_stop_loss": sl,
             "tp1": tp1,
             "tp2": tp2,
+            "tp1_allocation_pct": allocation,
             "quantity": float(payload.get("quantity") or 0),
             "risk_usd": float(payload.get("risk_usd") or 0),
             "notification_chat_id": payload.get("notification_chat_id"),
@@ -86,6 +91,8 @@ class TradeMonitor:
             "realized_r": 0.0,
             "last_price": None,
             "last_processed_close_ms": None,
+            "expires_at_ms": int(payload["expires_at_ms"]) if payload.get("expires_at_ms") else None,
+            "activation_allowed": bool(payload.get("activation_allowed", status != "watchlist")),
             "created_at": now,
             "updated_at": now,
             "events": [{"type": "CREATED", "status": status, "time": now}],
@@ -95,12 +102,15 @@ class TradeMonitor:
             self._save()
         return trade
 
-    def activate(self, trade_id: str) -> dict:
+    def activate(self, trade_id: str, verified=False) -> dict:
         with self._lock:
             trade = self._find(trade_id)
             if trade["status"] == "watchlist":
+                if not (verified or trade.get("activation_allowed")):
+                    raise ValueError("لا يمكن تفعيل Pending يدوياً؛ يجب أن تصبح READY بإعادة تحليل حديثة")
+                trade["activation_allowed"] = True
                 trade["status"] = "pending_entry"
-                self._event(trade, "ACTIVATED", "تم تأكيد الخطة يدوياً؛ بدأ انتظار الدخول")
+                self._event(trade, "ACTIVATED", "تحققت شروط READY؛ بدأ انتظار دخول على شمعة لاحقة")
                 self._save()
             return trade
 
@@ -110,6 +120,15 @@ class TradeMonitor:
             trade["status"] = "cancelled"
             self._event(trade, "CANCELLED", "ألغى المستخدم التتبع")
             self._save()
+            return trade
+
+    def invalidate(self, trade_id: str, reason: str) -> dict:
+        with self._lock:
+            trade = self._find(trade_id)
+            if trade["status"] not in FINAL_STATES:
+                trade["status"] = "invalidated"
+                self._event(trade, "SETUP_REANALYSIS_FAILED", reason)
+                self._save()
             return trade
 
     def list(self) -> list[dict]:
@@ -138,6 +157,15 @@ class TradeMonitor:
             )
             if not data:
                 raise RuntimeError(f"فشل تحديث السعر من {trade['exchange']}: {self.dm.get_last_fetch_report()}")
+            latest_close_ms = int(data.get("close_timestamps", data["timestamps"])[-1])
+            if (trade["status"] in ("watchlist", "pending_entry")
+                    and trade.get("expires_at_ms")
+                    and latest_close_ms >= int(trade["expires_at_ms"])):
+                trade["status"] = "expired"
+                self._event(trade, "SETUP_EXPIRED", "انتهت نافذة النموذج قبل تحقق دخول صالح", latest_close_ms)
+                trade["last_price"] = data["closes"][-1]
+                self._save()
+                return trade
             last_seen = trade.get("last_processed_close_ms")
             created_ms = (trade.get("created_at") or {}).get("timestamp_ms")
             cutoff = last_seen if last_seen is not None else created_ms
@@ -166,10 +194,21 @@ class TradeMonitor:
         is_long = "BUY" in trade["side"]
         entry, sl, tp1, tp2 = trade["entry"], trade["current_stop_loss"], trade["tp1"], trade.get("tp2")
 
+        if trade["status"] in ("watchlist", "pending_entry"):
+            invalidated = close < trade["initial_stop_loss"] if is_long else close > trade["initial_stop_loss"]
+            move_delivered = high >= tp1 if is_long else low <= tp1
+            if invalidated:
+                trade["status"] = "invalidated"
+                self._event(trade, "SETUP_INVALIDATED_BEFORE_ENTRY", "إغلاق تجاوز مستوى الإبطال قبل الدخول", ts)
+                return
+            if move_delivered and not (low <= entry <= high):
+                trade["status"] = "invalidated"
+                self._event(trade, "TARGET_REACHED_WITHOUT_ENTRY", "وصل السعر إلى TP1 قبل إعطاء دخول؛ انتهت الفرصة ولم نلاحقها", ts)
+                return
+
         if trade["status"] == "watchlist":
-            touched = low <= entry <= high
-            if touched:
-                self._event(trade, "WATCHLIST_PRICE_TOUCHED", "السعر لمس المنطقة لكن التتبع لم يكن مفعلاً؛ لم نفترض دخولاً", ts)
+            if low <= entry <= high:
+                self._event(trade, "WATCHLIST_PRICE_TOUCHED", "السعر لمس المنطقة لكن شروط التفعيل لم تكتمل؛ لم نفترض دخولاً", ts)
             return
 
         if trade["status"] == "pending_entry":
@@ -208,11 +247,12 @@ class TradeMonitor:
             # stop-first for unknown intrabar ordering.
             self._runner_stop(trade, ts, "Trailing stop and TP2 in same candle; conservative stop-first")
         elif hit_tp2:
+            runner_fraction = float(trade.get("remaining_pct", 0)) / 100
             trade["status"] = "tp2_hit"
             trade["remaining_pct"] = 0
             risk = abs(trade["entry"] - trade["initial_stop_loss"])
             r2 = abs(tp2 - trade["entry"]) / risk if risk else 0
-            trade["realized_r"] = round(trade["realized_r"] + 0.5 * r2, 3)
+            trade["realized_r"] = round(trade["realized_r"] + runner_fraction * r2, 3)
             self._event(trade, "TP2_HIT", f"أُغلق الجزء المتبقي عند {tp2}", ts)
         elif hit_sl:
             self._runner_stop(trade, ts, "Trailing/BE stop hit")
@@ -222,12 +262,18 @@ class TradeMonitor:
     def _hit_tp1(self, trade: dict, ts):
         risk = abs(trade["entry"] - trade["initial_stop_loss"])
         r1 = abs(trade["tp1"] - trade["entry"]) / risk if risk else 0
+        allocation = float(trade.get("tp1_allocation_pct", 50))
+        fraction = allocation / 100
         trade["tp1_hit"] = True
-        trade["remaining_pct"] = 50
-        trade["realized_r"] = round(0.5 * r1, 3)
+        trade["remaining_pct"] = round(100 - allocation, 4)
+        trade["realized_r"] = round(fraction * r1, 3)
         trade["current_stop_loss"] = trade["entry"]
-        trade["status"] = "runner"
-        self._event(trade, "TP1_HIT", "أُغلق 50% ونُقل الستوب إلى نقطة الدخول تلقائياً", ts)
+        if allocation >= 100:
+            trade["status"] = "closed"
+            self._event(trade, "TP1_FULL_EXIT", "أُغلق كامل المركز عند TP1 حسب النسبة المختارة", ts)
+        else:
+            trade["status"] = "runner"
+            self._event(trade, "TP1_HIT", f"أُغلق {allocation}% ونُقل الستوب إلى نقطة الدخول تلقائياً", ts)
 
     def _stop(self, trade: dict, ts, reason: str):
         trade["status"] = "stopped"
@@ -240,9 +286,10 @@ class TradeMonitor:
         exit_r = ((trade["current_stop_loss"] - trade["entry"]) / risk
                   if "BUY" in trade["side"] else
                   (trade["entry"] - trade["current_stop_loss"]) / risk) if risk else 0
+        runner_fraction = float(trade.get("remaining_pct", 0)) / 100
         trade["status"] = "closed"
         trade["remaining_pct"] = 0
-        trade["realized_r"] = round(trade["realized_r"] + 0.5 * exit_r, 3)
+        trade["realized_r"] = round(trade["realized_r"] + runner_fraction * exit_r, 3)
         self._event(trade, "RUNNER_STOPPED", reason, ts)
 
     def _trail_structure(self, trade: dict, data: dict, i: int, ts):

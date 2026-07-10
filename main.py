@@ -988,4 +988,11 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    import sys
+    if "--legacy" in sys.argv:
+        main()
+    else:
+        # الواجهة الافتراضية نفسها المستخدمة في التطبيق/Telegram.
+        # استخدم `python main.py --legacy` فقط للقائمة البحثية القديمة.
+        from run import main as unified_main
+        unified_main()

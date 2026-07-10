@@ -649,39 +649,29 @@ def evaluate_model_c(data, daily_bias, lookback=60, htf_data_sources=None):
         "detail": f"session={timing_info.get('session')} | {timing_info.get('ny_time')}",
     })
 
-    # ── الخطة: entry=OB CE، SL=تحت/فوق الهيكل الجديد (HL/LH) + buffer،
-    # TP1=المستوى المكسور نفسه (broken_level) - بالضبط كما ينص الدستور
-    # "TP1: the BOS level itself" ──
+    # الخطة: entry=OB CE، SL خلف منطقة الإبطال + buffer، ثم أقرب هدف
+    # ما زال نشطاً وغير مسحوب. المستوى المكسور ليس سيولة مستقبلية تلقائياً.
     entry_price = (chosen_ob["top"] + chosen_ob["bottom"]) / 2
     buffer_dist = _min_sl_buffer(last_price, atr_val)
     if is_long:
         sl_price = chosen_ob["bottom"] - buffer_dist
-        tp_price = broken_level
     else:
         sl_price = chosen_ob["top"] + buffer_dist
-        tp_price = broken_level
 
     sl_dist = abs(entry_price - sl_price)
-    tp_dist = abs(tp_price - entry_price)
-    # Model C uses the real broken BOS level when it is ahead of entry.
-    # Its actual R:R is reported honestly; the target is not discarded or
-    # stretched merely because it is below an arbitrary 3R threshold.
-    bos_target_ahead = (tp_price > entry_price) if is_long else (tp_price < entry_price)
-    if sl_dist > 0 and bos_target_ahead:
-        tp1 = {
-            "price": round(float(tp_price), 6), "level_price": tp_price, "kind": "BROKEN_BOS_LEVEL",
-            "rr": round(tp_dist / sl_dist, 2),
-            "detail": "TP1 = the genuine broken BOS level; R:R reported without target stretching",
-        }
-        targets = find_tp_targets(data, entry_price, sl_price, is_long=is_long, lookback=lookback,
-                                   htf_data_sources=htf_data_sources)
-        tp2 = targets.get("tp2", {"mode": "OPEN_TRAILING", "detail": "no TP2 candidate computed"})
-    else:
-        targets = _build_plan_with_tp1_tp2(data, entry_price, sl_price, is_long,
-                                            "Model C: entry=OB CE from BOS impulse, SL=OB edge - buffer",
-                                            htf_data_sources=htf_data_sources)
-        tp1 = targets["tp1"] if targets else None
-        tp2 = targets["tp2"] if targets else {"mode": "OPEN_TRAILING", "detail": "no TP2 candidate computed"}
+    # The broken BOS level was already crossed by definition, so treating it
+    # as untouched profit liquidity produced tiny/stale TP1 values (including
+    # targets already behind current price). Select the nearest still-active,
+    # unswept structural target instead.
+    targets = _build_plan_with_tp1_tp2(
+        data, entry_price, sl_price, is_long,
+        "Model C: entry=OB CE from BOS impulse, SL=OB edge - buffer",
+        htf_data_sources=htf_data_sources,
+    )
+    tp1 = targets["tp1"] if targets else None
+    tp2 = targets["tp2"] if targets else {
+        "mode": "OPEN_TRAILING", "detail": "no TP2 candidate computed"
+    }
 
     conditions.append({
         "name": "TP1_STRUCTURAL_LEVEL_FOUND",
@@ -700,7 +690,7 @@ def evaluate_model_c(data, daily_bias, lookback=60, htf_data_sources=None):
         "tp": tp1["price"],  # توافق خلفي - يشير لـTP1 دائماً
         "tp1": tp1, "tp2": tp2,
         "rr": tp1["rr"],
-        "basis": "Model C: entry=OB CE from BOS impulse, SL=OB edge - buffer, TP1=broken BOS level (or nearest genuine level if <3:1), TP2=Draw on Liquidity",
+        "basis": "Model C: entry=active OB CE from BOS impulse, SL beyond OB + buffer, TP1=nearest active unswept structural target, TP2=confirmed Draw on Liquidity or trailing",
         "evidence_anchor_idx": last_break["break_candle_index_from_end"],
     }
 

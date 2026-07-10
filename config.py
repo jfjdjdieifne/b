@@ -142,6 +142,10 @@ class Config:
     # move structural targets/stops; they only inform or decline execution.
     MIN_RR_POLICY = float(os.getenv("MIN_RR_POLICY", "0"))
     MAX_SL_POLICY_PCT = float(os.getenv("MAX_SL_POLICY_PCT", "0"))
+    PAPER_INITIAL_BALANCE = float(os.getenv("PAPER_INITIAL_BALANCE", "100"))
+    PAPER_DEFAULT_RISK_PCT = float(os.getenv("PAPER_DEFAULT_RISK_PCT", "1"))
+    PAPER_MAX_TOTAL_RISK_PCT = float(os.getenv("PAPER_MAX_TOTAL_RISK_PCT", "5"))
+    TP1_ALLOCATION_PCT = float(os.getenv("TP1_ALLOCATION_PCT", "50"))
 
     MTF_ENABLED = True
 

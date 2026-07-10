@@ -52,3 +52,21 @@ def test_tp1_then_tp2_automatic_management(tmp_path, monkeypatch):
     assert updated["status"] == "tp2_hit"
     assert updated["remaining_pct"] == 0
     assert updated["realized_r"] == 3.0  # 50% at 2R + 50% at 4R
+
+
+def test_configurable_eighty_twenty_partial(tmp_path, monkeypatch):
+    dm = DataManager(); stage = {"value": 1}
+    monkeypatch.setattr(dm, "get_ohlcv", lambda *a, **k: candles(stage["value"]))
+    monitor = TradeMonitor(dm, str(tmp_path / "trades80.json"))
+    trade = monitor.add({
+        "symbol": "ETH/USDT", "exchange": "okx", "timeframe": "5m",
+        "side": "BUY_LIMIT", "entry": 100, "stop_loss": 95,
+        "tp1": 110, "tp2": 120, "status": "pending_entry",
+        "tp1_allocation_pct": 80,
+    })
+    trade["created_at"]["timestamp_ms"] = 0
+    updated = monitor.refresh(trade["id"])
+    assert updated["remaining_pct"] == 20
+    stage["value"] = 2
+    updated = monitor.refresh(trade["id"])
+    assert updated["realized_r"] == 2.4  # 80% at 2R + 20% at 4R

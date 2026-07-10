@@ -1240,6 +1240,14 @@ def find_tp_targets(data, entry_price, sl_price, is_long, lookback=150,
         src_n = len(src_highs)
         if src_n < 15:
             return []
+        # Reachability is derived from this source's recent candle ranges.
+        # It is a horizon sanity check, not an ICT rule: a centuries-old or
+        # hundreds-of-R level can remain technically unswept while being an
+        # unusable target for an intraday plan.
+        recent_ranges = src_highs[max(0, src_n - 20):] - src_lows[max(0, src_n - 20):]
+        typical_range = float(np.median(recent_ranges[recent_ranges > 0])) if np.any(recent_ranges > 0) else 0.0
+        label_upper = source_label.upper()
+        max_expected_bars = 3 if label_upper in ("DAILY", "1D") else (18 if label_upper == "4H" else 96)
         out = []
         eq_src = detect_equal_highs_lows(src_data, lookback=src_lookback)
         clusters_src = eq_src["eqh_clusters"] if is_long else eq_src["eql_clusters"]
@@ -1288,6 +1296,13 @@ def find_tp_targets(data, entry_price, sl_price, is_long, lookback=150,
                 out.append({"price": edge, "kind": "OPPOSING_OB_EDGE", "touch_count": 1,
                             "source": source_label,
                             "detail": f"[{source_label}] Opposing Order Block edge at idx {ob['index_from_end']}"})
+        for candidate in out:
+            distance = abs(candidate["price"] - entry_price)
+            estimated_bars = (distance / typical_range) if typical_range > 0 else float("inf")
+            candidate["typical_source_range"] = round(typical_range, 8)
+            candidate["estimated_bars_to_target"] = round(estimated_bars, 2) if np.isfinite(estimated_bars) else None
+            candidate["max_expected_bars"] = max_expected_bars
+            candidate["horizon_compatible"] = estimated_bars <= max_expected_bars
         return out
 
     # ── TP1: SCAN مستويات معاكسة **حصراً من فريم التنفيذ** (خطوة 1-4
@@ -1425,7 +1440,11 @@ def find_tp_targets(data, entry_price, sl_price, is_long, lookback=150,
         مسبح سيولة حقيقي (touch_count>=2، Option A بالدستور)، وإلا
         أبعد مستوى حقيقي متاح (Option B) - لكن كلاهما يمران أولاً عبر
         نفس عتبة التأكيدات، لا استثناء لأي منهما."""
-        candidates_beyond_tp1 = [c for c in pool if c["distance"] > min_distance_from_tp1]
+        candidates_beyond_tp1 = [
+            c for c in pool
+            if c["distance"] > min_distance_from_tp1
+            and c.get("horizon_compatible", True)
+        ]
         if not candidates_beyond_tp1:
             return None, None, 0, []
 
@@ -1488,6 +1507,8 @@ def find_tp_targets(data, entry_price, sl_price, is_long, lookback=150,
                 "source": source_label.upper(),
                 "confluence_count": conf_count,
                 "confluences": conf_list,
+                "estimated_bars_to_target": chosen.get("estimated_bars_to_target"),
+                "max_expected_bars": chosen.get("max_expected_bars"),
                 "detail": (
                     f"Draw on Liquidity ({option_label}, {source_label} timeframe per "
                     f"section 12.3/14.3, {conf_count} confluences confirmed: {'; '.join(conf_list)} - "
@@ -1509,6 +1530,8 @@ def find_tp_targets(data, entry_price, sl_price, is_long, lookback=150,
                 "source": "ENTRY_TF",
                 "confluence_count": conf_count,
                 "confluences": conf_list,
+                "estimated_bars_to_target": chosen.get("estimated_bars_to_target"),
+                "max_expected_bars": chosen.get("max_expected_bars"),
                 "detail": (
                     f"Draw on Liquidity ({option_label}, entry-TF fallback, {conf_count} confluences "
                     f"confirmed: {'; '.join(conf_list)} - no higher-timeframe candidate met the "
@@ -1541,25 +1564,25 @@ def find_tp_targets(data, entry_price, sl_price, is_long, lookback=150,
 
 
 # ══════════════════════════════════════════════════════════════════
-#  10) محاكاة إدارة الصفقة الحقيقية (TP1 50% + BE + Structure Trail)
-#      قسم [RISK_ENGINE] RULE 6/8 + [TRADE_MANAGEMENT] 14.4/14.5
-#      بالدستور - محاكاة رياضية بحتة على بيانات تاريخية فعلية فقط
+#  10) محاكاة إدارة الصفقة (TP1 configurable + BE + Structure Trail)
+#      50/50 يطابق مثال الأمرين المتساويين في Episode 41، لكنه ليس
+#      نسبة عالمية إلزامية؛ يدعم المحرك 80/20 و100/0 أيضاً.
 #      (لا تنفيذ حي - هذا لغرض الباك تيست/المقارنة الصادقة فقط)
 # ══════════════════════════════════════════════════════════════════
 
 def simulate_managed_trade_outcome(candles, entry_price, sl_price, tp1_price, tp2_info,
-                                    is_short, entry_idx=0, swing_window=2):
+                                    is_short, entry_idx=0, swing_window=2,
+                                    tp1_fraction=0.5):
     """
-    يحاكي **بالضبط** ما يفعله مايكل حسب الدستور (RULE 6 + 14.4 + 14.5)
-    شمعة بشمعة على بيانات تاريخية حقيقية فعلية بعد الدخول:
+    يحاكي سياسة المشروع المعلنة شمعة بشمعة. أخذ partials عند مستويات
+    منطقية مدعوم بالمحاضرات، أما النسبة ونقل BE فخيارات محاكاة صريحة:
 
       المرحلة 1 (قبل TP1): SL ثابت 100% في مكانه الأصلي (RULE 6: "Before
         TP1: SL stays at its ORIGINAL position. Do not move it. No
         exceptions."). لو SL انضرب هنا → LOSS كاملة (100% من المركز).
-      المرحلة 2 (TP1 ينضرب): 50% من المركز يُقفَل عند tp1_price (ربح
-        مضمون)، SL للـ50% الباقي ينتقل فوراً لسعر الدخول بالضبط
-        (breakeven - لا نسبة، لا تقريب).
-      المرحلة 3 (بعد TP1، الباقي 50%): إن وُجد tp2 حقيقي (tp2_info
+      المرحلة 2 (TP1 ينضرب): tp1_fraction من المركز يُقفَل عند السعر،
+        وSL للجزء الباقي ينتقل لسعر الدخول وفق سياسة المحاكاة.
+      المرحلة 3 (بعد TP1): إن وُجد tp2 حقيقي (tp2_info
         mode=TARGET) نراقبه؛ وبالتوازي نطبّق STRUCTURE TRAIL (Method 1
         المفضّل بالدستور 14.5): كل ما تشكّل قاع/قمة سوينغ جديد مؤكد
         (2 شمعة تأكيد، swing_window=2) بنفس اتجاه الصفقة، ينتقل الستوب
@@ -1584,11 +1607,12 @@ def simulate_managed_trade_outcome(candles, entry_price, sl_price, tp1_price, tp
             "tp1_hit": bool, "tp1_hit_idx"/"tp1_hit_time",
             "tp2_hit": bool, "final_exit_price", "final_exit_reason",
             "final_exit_idx"/"final_exit_time",
-            "pnl_pct_blended": float (50%×TP1_pnl% + 50%×final_pnl%,
-                نفس معادلة الدستور سطر 662/677/691 بالضبط),
+            "pnl_pct_blended": float (tp1_fraction×TP1_pnl + runner_fraction×final_pnl),
             "trail_history": [{"idx_from_start","new_sl"}, ...] (للشفافية),
         }
     """
+    tp1_fraction = min(1.0, max(0.0, float(tp1_fraction)))
+    runner_fraction = 1.0 - tp1_fraction
     highs = candles.get("highs", [])
     lows = candles.get("lows", [])
     closes = candles.get("closes", [])
@@ -1694,9 +1718,11 @@ def simulate_managed_trade_outcome(candles, entry_price, sl_price, tp1_price, tp
                 tp1_hit = True
 
                 tp1_hit_idx = i
-                current_sl = entry_price  # المرحلة 2: فوري، بالضبط سعر الدخول (breakeven)
+                if tp1_fraction >= 1.0:
+                    final_exit_price, final_exit_reason, final_exit_idx = tp1_price, "TP1_FULL_EXIT", i
+                    break
+                current_sl = entry_price
                 trail_history.append({"idx_from_start": i, "new_sl": current_sl, "reason": "TP1_HIT_BREAKEVEN"})
-                # لا break - نكمل بنفس الشمعة لفحص المرحلة 3 إن انطبقت لاحقاً
                 continue
         else:
             # ── المرحلة 3: بعد TP1 - Structure Trail (Method 1، القسم 14.5) ──
@@ -1749,19 +1775,22 @@ def simulate_managed_trade_outcome(candles, entry_price, sl_price, tp1_price, tp
     if final_exit_reason == "SL_HIT_BEFORE_TP1":
         classification = "LOSS"
         pnl_blended = _pnl_pct(sl_price)  # 100% من المركز يخسر مسافة SL كاملة
+    elif final_exit_reason == "TP1_FULL_EXIT":
+        classification = "WIN_TP1_FULL_EXIT"
+        pnl_blended = _pnl_pct(tp1_price)
     elif final_exit_reason == "TP2_HIT":
         classification = "WIN_FULL"
-        pnl_blended = 0.5 * _pnl_pct(tp1_price) + 0.5 * _pnl_pct(final_exit_price)
+        pnl_blended = tp1_fraction * _pnl_pct(tp1_price) + runner_fraction * _pnl_pct(final_exit_price)
     elif final_exit_reason == "TRAILING_STOP_HIT":
         if abs(final_exit_price - entry_price) < abs(entry_price) * 0.0005:
             classification = "WIN_PARTIAL"  # التريلينغ ضرب قريب جداً من الدخول = BE فعلياً
         else:
             classification = "WIN_TRAIL"
-        pnl_blended = 0.5 * _pnl_pct(tp1_price) + 0.5 * _pnl_pct(final_exit_price)
+        pnl_blended = tp1_fraction * _pnl_pct(tp1_price) + runner_fraction * _pnl_pct(final_exit_price)
     elif final_exit_reason == "NEITHER_HIT_WITHIN_WINDOW":
         if tp1_hit:
             classification = "OPEN_AFTER_TP1"
-            pnl_blended = 0.5 * _pnl_pct(tp1_price) + 0.5 * _pnl_pct(final_exit_price)
+            pnl_blended = tp1_fraction * _pnl_pct(tp1_price) + runner_fraction * _pnl_pct(final_exit_price)
         else:
             classification = "NEITHER_HIT_WITHIN_WINDOW"
             pnl_blended = _pnl_pct(final_exit_price)

@@ -12,6 +12,7 @@ import math
 import uuid
 from typing import Any
 
+from config import Config
 from data_manager import DataManager, DataManagerError
 from ict_entry_checklist_engine import evaluate_all_entry_models
 from ict_math_engine import (
@@ -23,6 +24,7 @@ from ict_math_engine import (
     detect_order_blocks,
 )
 from ict_sessions import classify_session
+from setup_policy import setup_expiry
 from user_utils import closed_candle_stamp, dual_time
 
 
@@ -48,7 +50,7 @@ class SnapshotAnalyzer:
 
     def analyze(
         self, symbol="ETH/USDT", exchange="auto", execution_timeframe="5m",
-        balance=100.0, risk_pct=1.0,
+        balance=100.0, risk_pct=1.0, tp1_allocation_pct=None,
     ) -> dict[str, Any]:
         symbol = self.dm.normalize_symbol(symbol)
         execution_tf = self.dm.normalize_timeframe(execution_timeframe)
@@ -61,6 +63,11 @@ class SnapshotAnalyzer:
         risk_pct = float(risk_pct)
         if balance <= 0 or not (0 < risk_pct <= 5):
             raise ValueError("رأس المال يجب أن يكون موجباً والمخاطرة أكبر من 0% وحتى 5%")
+        tp1_allocation_pct = float(
+            Config.TP1_ALLOCATION_PCT if tp1_allocation_pct is None else tp1_allocation_pct
+        )
+        if not 1 <= tp1_allocation_pct <= 100:
+            raise ValueError("نسبة الإغلاق عند TP1 يجب أن تكون بين 1 و100%")
 
         audit_id = f"A-{dual_time()['timestamp_ms']}-{uuid.uuid4().hex[:6]}"
         limits = {execution_tf: 500, "15m": 400, "4h": 300, "1d": 260}
@@ -135,7 +142,7 @@ class SnapshotAnalyzer:
 
         candidate = self._candidate_report(
             model_result, bias, entry, frame_reports[execution_tf], session,
-            balance, risk_pct, bias_state,
+            balance, risk_pct, bias_state, tp1_allocation_pct,
         )
         decision = candidate.get("decision") if candidate else {
             "state": "NO_TRADE", "label_ar": "لا توجد صفقة موثقة الآن",
@@ -168,6 +175,7 @@ class SnapshotAnalyzer:
             "entry_models": self._summarize_models(model_result),
             "candidate": candidate,
             "decision": decision,
+            "expectation": self._expectation(candidate, bias, entry["closes"][-1]),
             "data_fetch_reports": reports,
             "limitations_ar": [
                 "النتيجة تحليل تقني آلي وليست ضماناً ولا نصيحة مالية.",
@@ -233,7 +241,7 @@ class SnapshotAnalyzer:
             "explanation_ar": facts,
         }
 
-    def _candidate_report(self, model_result, bias, entry, entry_frame, session, balance, risk_pct, bias_state):
+    def _candidate_report(self, model_result, bias, entry, entry_frame, session, balance, risk_pct, bias_state, tp1_allocation_pct):
         chosen = (model_result or {}).get("chosen_model")
         if not chosen or not chosen.get("plan"):
             return None
@@ -280,25 +288,31 @@ class SnapshotAnalyzer:
             if not timing_ok: missing.append("خارج نافذة التنفيذ لهذا النموذج")
             reason = "؛ ".join(missing) or "تحتاج مراجعة يدوية"
 
+        lifecycle = setup_expiry(
+            entry["close_timestamps"][-1], chosen["model"], entry["timeframe"]
+        )
         targets = [{
-            "name": "TP1", "price": tp1, "allocation_pct": 50,
+            "name": "TP1", "price": tp1, "allocation_pct": tp1_allocation_pct,
             "kind": tp1_obj.get("kind"), "rr": tp1_obj.get("rr"),
             "detail": tp1_obj.get("detail"),
         }]
-        if tp2_obj.get("mode") == "TARGET" and tp2_obj.get("price"):
+        if (tp1_allocation_pct < 100
+                and tp2_obj.get("mode") == "TARGET" and tp2_obj.get("price")):
             targets.append({
-                "name": "TP2", "price": float(tp2_obj["price"]), "allocation_pct": 50,
+                "name": "TP2", "price": float(tp2_obj["price"]), "allocation_pct": 100 - tp1_allocation_pct,
                 "kind": tp2_obj.get("kind"), "rr": tp2_obj.get("rr"),
                 "source": tp2_obj.get("source"), "confluences": tp2_obj.get("confluences", []),
                 "detail": tp2_obj.get("detail"),
             })
             runner = None
-        else:
+        elif tp1_allocation_pct < 100:
             runner = {
-                "allocation_pct": 50,
+                "allocation_pct": 100 - tp1_allocation_pct,
                 "mode": "STRUCTURE_TRAIL_AFTER_TP1",
                 "detail_ar": "لا يوجد هدف ثانٍ قوي كفاية؛ بعد TP1 يُنقل الستوب حسب الخطة ويُلاحق HL/LH، بلا اختراع رقم.",
             }
+        else:
+            runner = None
 
         return {
             "model": chosen["model"],
@@ -327,20 +341,61 @@ class SnapshotAnalyzer:
                 for c in chosen.get("conditions", [])
             ],
             "basis": plan.get("basis"),
+            "lifecycle": lifecycle,
             "tracking_payload": {
                 "symbol": entry["symbol"], "exchange": entry["source"],
-                "timeframe": entry["timeframe"], "side": side,
+                "timeframe": entry["timeframe"], "model": chosen["model"], "side": side,
                 "entry": entry_price, "stop_loss": stop,
                 "tp1": tp1, "tp2": tp2_obj.get("price") if tp2_obj.get("mode") == "TARGET" else None,
                 "quantity": round(qty, 8), "risk_usd": round(risk_usd, 4),
+                "tp1_allocation_pct": tp1_allocation_pct,
+                "expires_at_ms": lifecycle["expires_at_ms"],
+                "activation_allowed": state == "READY_NOW",
                 "status": "watchlist" if state != "READY_NOW" else "pending_entry",
             },
         }
 
     @staticmethod
+    def _expectation(candidate, bias, current_price):
+        if not candidate:
+            return {
+                "state": "WAIT_FOR_HTF_ALIGNMENT",
+                "current_price": current_price,
+                "expects_ar": "لا يوجد مسار سعري مؤهل الآن؛ ننتظر اتفاق Daily و4H ثم نموذج دخول كامل.",
+                "waits_for": ["Daily/4H alignment", "named setup with displacement and active zone"],
+                "invalidation": None,
+            }
+        checks = candidate.get("checks", {})
+        waits = []
+        if not checks.get("ltf_displacement_break_confirmed"):
+            waits.append("إغلاق كسر حديث باتجاه الانحياز مع displacement على فريم التنفيذ")
+        if not checks.get("price_at_entry_zone"):
+            waits.append(f"عودة السعر إلى منطقة الدخول {candidate['entry']}")
+        if not checks.get("executable_session"):
+            waits.append("دخول نافذة توقيت النموذج قبل انتهاء الصلاحية")
+        first_target = candidate["targets"][0]["price"]
+        return {
+            "state": "READY_PATH" if not waits else "WAIT_CONFIRMATION",
+            "current_price": current_price,
+            "direction": bias,
+            "expects_ar": (
+                f"إذا اكتملت الشروط، السيناريو هو تفاعل من {candidate['entry']} مع إبطال عند "
+                f"{candidate['stop_loss']}، ثم أقرب هدف نشط {first_target}. هذه خريطة شرطية لا تنبؤ مضمون."
+            ),
+            "waits_for": waits,
+            "entry": candidate["entry"], "invalidation": candidate["stop_loss"],
+            "tp1": first_target,
+            "expires_at": candidate.get("lifecycle", {}).get("expires_at"),
+        }
+
+    @staticmethod
     def _summarize_models(model_result):
         if not model_result:
-            return []
+            return [{
+                "model": "NOT_EVALUATED", "status": "BIAS_UNCLEAR",
+                "failed": ["Daily and 4H must align before entry models are evaluated"],
+                "pending": [],
+            }]
         return [{
             "model": r.get("model"), "status": r.get("status"),
             "failed": [c.get("name") for c in r.get("conditions", []) if c.get("status") is False],
