@@ -15,6 +15,7 @@ from typing import Any
 
 from config import Config
 from data_manager import DataManager
+from setup_policy import setup_expiry
 from user_utils import dual_time, parse_price
 
 
@@ -33,7 +34,17 @@ class TradeMonitor:
         try:
             with open(self.file_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
-                return data if isinstance(data, list) else []
+                if not isinstance(data, list):
+                    return []
+                # Migrate watchlists created before expiry protocol existed.
+                now_ms = dual_time()["timestamp_ms"]
+                for trade in data:
+                    if trade.get("status") in ("watchlist", "pending_entry") and not trade.get("expires_at_ms"):
+                        created_ms = (trade.get("created_at") or {}).get("timestamp_ms") or now_ms
+                        life = setup_expiry(created_ms, trade.get("model"), trade.get("timeframe", "5m"))
+                        trade["expires_at_ms"] = life["expires_at_ms"]
+                        trade["activation_allowed"] = False
+                return data
         except (FileNotFoundError, json.JSONDecodeError, OSError):
             return []
 
