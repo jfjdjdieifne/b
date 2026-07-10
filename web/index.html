@@ -85,6 +85,7 @@
         <label><span>الرصيد $</span><input id="btBalance" type="number" value="100"></label>
         <label><span>المخاطرة %</span><input id="btRisk" type="number" value="1" step="0.1"></label>
         <label><span>إغلاق TP1 %</span><select id="btAllocation"><option value="50">50%</option><option value="80">80%</option><option value="100">100%</option></select></label>
+        <label><span>دقة نقاط الفحص</span><select id="btCheckpoint"><option value="15">كل 15m — متوازن</option><option value="5">كل 5m — أبطأ/أقرب للايف</option><option value="60">كل ساعة — سريع</option></select></label>
         <button id="runBacktest" class="primary">ابدأ الاختبار</button>
       </div>
       <div id="backtestLoading" class="loading hidden"><span></span><div><b>Walk-forward قيد التنفيذ…</b><small>قد يستغرق عدة دقائق حسب الفترة؛ لا توجد شمعة مستقبلية داخل التحليل.</small></div></div>

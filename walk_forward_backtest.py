@@ -5,6 +5,7 @@ from __future__ import annotations
 import bisect
 import json
 import os
+import time
 import uuid
 from collections import Counter
 from datetime import datetime, timedelta, timezone
@@ -58,9 +59,9 @@ class WalkForwardBacktester:
             dt = dt + timedelta(days=1) - timedelta(milliseconds=1)
         return int(dt.timestamp()*1000)
 
-    def run(self, symbol, start, end, exchange="binance", execution_timeframe="5m",
+    def run(self, symbol, start, end, exchange="kucoin", execution_timeframe="5m",
             initial_balance=100.0, risk_pct=1.0, fee_bps=10.0, slippage_bps=2.0,
-            tp1_allocation_pct=None):
+            tp1_allocation_pct=None, progress_callback=None, checkpoint_minutes=15):
         symbol = self.dm.normalize_symbol(symbol)
         exchange = self.dm.normalize_exchange(exchange)
         tf = self.dm.normalize_timeframe(execution_timeframe)
@@ -72,15 +73,34 @@ class WalkForwardBacktester:
         if balance <= 0 or not 0 < float(risk_pct) <= 5: raise ValueError("الرصيد موجب والمخاطرة 0-5%")
         tp1_allocation_pct = float(Config.TP1_ALLOCATION_PCT if tp1_allocation_pct is None else tp1_allocation_pct)
         if not 1 <= tp1_allocation_pct <= 100: raise ValueError("نسبة TP1 بين 1 و100%")
+        checkpoint_minutes = max(5, int(checkpoint_minutes))
+        started_at = time.monotonic()
 
+        def emit(stage, **extra):
+            if progress_callback:
+                progress_callback({"stage": stage, "symbol": symbol, "exchange": exchange,
+                                   "elapsed_seconds": round(time.monotonic()-started_at, 1), **extra})
+
+        emit("BACKTEST_START", start_ms=start_ms, end_ms=end_ms)
         warmups = {tf: 4*86400*1000, "15m": 8*86400*1000, "4h": 70*86400*1000, "1d": 320*86400*1000}
         datasets = {}
-        for frame in (tf, "15m", "4h", "1d"):
+        frames = (tf, "15m", "4h", "1d")
+        for frame_no, frame in enumerate(frames, 1):
+            emit("FRAME_DOWNLOAD_START", frame=frame, frame_no=frame_no, frame_total=len(frames))
+            def frame_progress(event, fr=frame):
+                detail = dict(event)
+                stage_name = detail.pop("stage", "PROGRESS")
+                for duplicate in ("symbol", "exchange", "timeframe"):
+                    detail.pop(duplicate, None)
+                emit("OHLCV_" + stage_name, frame=fr, **detail)
             datasets[frame] = self.dm.get_historical_ohlcv(
-                symbol, frame, start_ms-warmups[frame], end_ms, exchange
+                symbol, frame, start_ms-warmups[frame], end_ms, exchange,
+                progress_callback=frame_progress,
             )
             if not datasets[frame] or datasets[frame]["count"] < 20:
                 raise DataManagerError(f"بيانات تاريخية غير كافية لـ{frame} من {exchange}")
+            emit("FRAME_DOWNLOAD_DONE", frame=frame, candles=datasets[frame]["count"],
+                 frame_no=frame_no, frame_total=len(frames))
 
         hist_dm = HistoricalDataManager(datasets, exchange)
         analyzer = SnapshotAnalyzer(hist_dm)
@@ -88,12 +108,21 @@ class WalkForwardBacktester:
         close_times = entry_data.get("close_timestamps") or entry_data["timestamps"]
         start_i = bisect.bisect_left(close_times, start_ms)
         end_i = bisect.bisect_right(close_times, end_ms)
-        stride = {"5m": 3, "3m": 5, "1m": 15}[tf]  # one decision checkpoint per 15m
+        tf_minutes = {"5m": 5, "3m": 3, "1m": 1}[tf]
+        stride = max(1, round(checkpoint_minutes / tf_minutes))
 
         trades, signals, no_fills, checkpoints = [], 0, 0, 0
         decision_counts, bias_counts = Counter(), Counter()
         model_status_counts, rejection_reasons = Counter(), Counter()
         equity_curve = [{"time": dual_time(start_ms), "balance": balance}]
+        eligible_total = sum(
+            1 for idx in range(start_i, end_i)
+            if classify_session(int(close_times[idx])).get("is_executable_window")
+            and not ((idx-start_i) % stride)
+        )
+        emit("ANALYSIS_START", eligible_checkpoints=eligible_total,
+             checkpoint_minutes=checkpoint_minutes)
+        progress_step = max(1, eligible_total // 100)
         i = start_i
         while i < end_i:
             cutoff = int(close_times[i])
@@ -103,6 +132,14 @@ class WalkForwardBacktester:
                 i += 1; continue
             hist_dm.cutoff = cutoff
             checkpoints += 1
+            if checkpoints == 1 or checkpoints % progress_step == 0:
+                elapsed = max(time.monotonic()-started_at, 0.001)
+                rate = checkpoints/elapsed
+                remaining = max(0, eligible_total-checkpoints)
+                emit("ANALYSIS_PROGRESS", completed=checkpoints, total=eligible_total,
+                     percent=round(checkpoints/max(eligible_total,1)*100,1),
+                     eta_seconds=round(remaining/rate,1) if rate else None,
+                     trades=len(trades), signals=signals)
             result = analyzer.analyze(symbol, exchange, tf, balance, risk_pct, tp1_allocation_pct)
             if result.get("ok"):
                 decision_counts[result.get("decision", {}).get("state", "UNKNOWN")] += 1
@@ -173,7 +210,7 @@ class WalkForwardBacktester:
                 "outcome candles are read only after the plan is frozen",
                 "same-candle SL/TP ambiguity uses conservative ordering in simulator",
             ],
-            "fast_mode": "decision checkpoint every 15m inside configured execution windows",
+            "fast_mode": f"decision checkpoint every {checkpoint_minutes}m inside configured execution windows",
             "symbol": symbol, "exchange": exchange, "execution_timeframe": tf,
             "start": dual_time(start_ms), "end": dual_time(end_ms),
             "initial_balance": float(initial_balance), "final_balance": balance,
@@ -190,11 +227,14 @@ class WalkForwardBacktester:
             "win_rate": round(wins/len(trades)*100,2) if trades else None,
             "average_r": round(sum(t["realized_r"] for t in trades)/len(trades),3) if trades else None,
             "equity_curve": equity_curve, "generated_at": dual_time(),
+            "runtime_seconds": round(time.monotonic()-started_at, 2),
             "disclaimer": "Hypothetical simulation; not indicative of future performance.",
         }
         path = os.path.join(self.reports_dir, report["id"]+".json")
         with open(path,"w",encoding="utf-8") as f: json.dump(report,f,ensure_ascii=False,indent=2,default=str)
         report["saved_to"] = path
+        emit("BACKTEST_DONE", trades=len(trades), wins=wins, losses=losses,
+             final_balance=balance, report_id=report["id"])
         return report
 
     @staticmethod

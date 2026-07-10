@@ -132,13 +132,14 @@ class Handler(BaseHTTPRequestHandler):
                     report = WALK_FORWARD.run(
                         symbol=payload.get("symbol", "ETH/USDT"),
                         start=payload.get("start"), end=payload.get("end"),
-                        exchange=payload.get("exchange", "binance"),
+                        exchange=payload.get("exchange", "kucoin"),
                         execution_timeframe=payload.get("execution_timeframe", "5m"),
                         initial_balance=payload.get("initial_balance", 100),
                         risk_pct=payload.get("risk_pct", 1),
                         fee_bps=payload.get("fee_bps", 10),
                         slippage_bps=payload.get("slippage_bps", 2),
                         tp1_allocation_pct=payload.get("tp1_allocation_pct", 50),
+                        checkpoint_minutes=payload.get("checkpoint_minutes", 15),
                     )
                 finally:
                     BACKTEST_LOCK.release()

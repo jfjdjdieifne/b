@@ -33,13 +33,38 @@ def run_backtest():
     from walk_forward_backtest import WalkForwardBacktester
     symbol=input("الزوج [ETH/USDT]: ").strip() or "ETH/USDT"
     start=input("من YYYY-MM-DD: ").strip();end=input("إلى YYYY-MM-DD: ").strip()
-    exchange=input("المنصة [binance]: ").strip() or "binance"
+    exchange=input("المنصة [kucoin] (Binance قد يكون محجوباً حسب البلد): ").strip() or "kucoin"
     capital=float(input("الرصيد [100]: ").strip() or 100)
     risk=float(input("المخاطرة % [1]: ").strip() or 1)
     alloc=float(input("إغلاق TP1 % [50]: ").strip() or 50)
-    print("⏳ Walk-forward…")
-    r=WalkForwardBacktester().run(symbol,start,end,exchange=exchange,initial_balance=capital,risk_pct=risk,tp1_allocation_pct=alloc)
-    print(f"{r['id']} | صفقات {r['trade_count']} | {r['wins']}W/{r['losses']}L | ${r['initial_balance']} → ${r['final_balance']} ({r['return_pct']}%)")
+    checkpoint=int(input("كل كم دقيقة نفحص؟ [15] (5=مطابق أكثر للايف وأبطأ، 60=سريع): ").strip() or 15)
+
+    def progress(event):
+        stage=event.get("stage")
+        if stage=="FRAME_DOWNLOAD_START":
+            print(f"\n📥 [{event['frame_no']}/{event['frame_total']}] جلب {event['frame']}…",flush=True)
+        elif stage=="OHLCV_CACHE_HIT":
+            print(f"   ♻️ كاش محلي: {event.get('candles')} شمعة",flush=True)
+        elif stage=="OHLCV_DOWNLOAD_PAGE":
+            print(f"   صفحة {event.get('page')} | المجموع الخام {event.get('candles_total')}",flush=True)
+        elif stage=="FRAME_DOWNLOAD_DONE":
+            print(f"   ✅ {event['frame']}: {event['candles']} شمعة مغلقة",flush=True)
+        elif stage=="ANALYSIS_START":
+            print(f"\n🧪 بدء {event['eligible_checkpoints']} نقطة Walk-forward…",flush=True)
+        elif stage=="ANALYSIS_PROGRESS":
+            print(f"   {event['percent']:5.1f}% | {event['completed']}/{event['total']} | "
+                  f"صفقات={event['trades']} إشارات={event['signals']} | ETA≈{event.get('eta_seconds')}s",flush=True)
+        elif stage=="BACKTEST_DONE":
+            print(f"\n✅ اكتمل: {event['trades']} صفقة | {event['wins']} ربح / {event['losses']} خسارة",flush=True)
+
+    print("⏳ تنزيل/تحميل OHLC ثم Walk-forward؛ سترى التقدم الآن.")
+    r=WalkForwardBacktester().run(
+        symbol,start,end,exchange=exchange,initial_balance=capital,risk_pct=risk,
+        tp1_allocation_pct=alloc,checkpoint_minutes=checkpoint,progress_callback=progress,
+    )
+    print(f"{r['id']} | صفقات {r['trade_count']} | {r['wins']}W/{r['losses']}L | "
+          f"${r['initial_balance']} → ${r['final_balance']} ({r['return_pct']}%) | {r['runtime_seconds']}s")
+    print("أكثر أسباب الرفض:",json.dumps(r.get('top_rejection_reasons',{}),ensure_ascii=False,indent=2))
     print("حُفظ:",r['saved_to'])
 
 

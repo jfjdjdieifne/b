@@ -233,12 +233,23 @@ class TelegramBot:
         if len(parts) < 4:
             return self.send(chat_id, "الصيغة: /backtest ETH/USDT 2026-06-10 2026-07-10 binance")
         symbol, start, end = parts[1:4]
-        exchange = parts[4] if len(parts) > 4 else "binance"
-        self.send(chat_id, "⏳ بدأ Walk-forward بلا look-ahead. قد يستغرق عدة دقائق…")
+        exchange = parts[4] if len(parts) > 4 else "kucoin"
+        self.send(chat_id, "⏳ بدأ Walk-forward بلا look-ahead. سأرسل تقدم المراحل…")
+        sent_percent = set()
+        def progress(event):
+            stage = event.get("stage")
+            if stage == "FRAME_DOWNLOAD_DONE":
+                self.send(chat_id, f"📥 {event.get('frame')}: {event.get('candles')} شمعة جاهزة")
+            elif stage == "ANALYSIS_PROGRESS":
+                bucket = int(event.get("percent", 0) // 25 * 25)
+                if bucket in (25, 50, 75, 100) and bucket not in sent_percent:
+                    sent_percent.add(bucket)
+                    self.send(chat_id, f"🧪 {event.get('percent')}% | صفقات={event.get('trades')} | ETA≈{event.get('eta_seconds')}s")
         try:
             r = self.backtester.run(symbol, start, end, exchange=exchange,
                                     initial_balance=self.paper.snapshot()['balance'],
-                                    risk_pct=Config.PAPER_DEFAULT_RISK_PCT)
+                                    risk_pct=Config.PAPER_DEFAULT_RISK_PCT,
+                                    progress_callback=progress)
             self.send(chat_id,
                 f"🧪 {r['id']}\n{r['symbol']} | {r['trade_count']} صفقة | {r['wins']} ربح / {r['losses']} خسارة\n"
                 f"الرصيد: ${r['initial_balance']} → ${r['final_balance']}\n"

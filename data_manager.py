@@ -14,7 +14,9 @@ Public OHLCV endpoints do not require exchange API keys.
 """
 from __future__ import annotations
 
+import json
 import logging
+import os
 import time
 from dataclasses import dataclass
 from typing import Any, Callable
@@ -623,11 +625,12 @@ class DataManager:
     # ------------------------------------------------------------------
     # Historical ranges (walk-forward backtests)
     # ------------------------------------------------------------------
-    def get_historical_ohlcv(self, symbol, timeframe, start_ms, end_ms, exchange="binance"):
-        """Fetch a closed historical range without future candles.
+    def get_historical_ohlcv(self, symbol, timeframe, start_ms, end_ms, exchange="binance",
+                             progress_callback=None, use_cache=True):
+        """Fetch, persist and return a closed historical OHLCV range.
 
-        Binance/MEXC paginate forward; OKX paginates backward. Public data
-        only. Other venues deliberately raise instead of silently switching.
+        Progress is emitted per API page. Exact ranges are cached under
+        ``data/ohlcv_cache`` so retrying a 30-day test does not download again.
         """
         symbol = self.normalize_symbol(symbol)
         timeframe = self.normalize_timeframe(timeframe)
@@ -635,7 +638,31 @@ class DataManager:
         start_ms, end_ms = int(start_ms), int(end_ms)
         if not 0 < start_ms < end_ms:
             raise DataManagerError("نطاق التاريخ غير صالح")
+        cache_dir = os.path.join(Config.DATA_DIR, "ohlcv_cache")
+        os.makedirs(cache_dir, exist_ok=True)
+        cache_path = os.path.join(
+            cache_dir,
+            f"{exchange}_{self._compact_symbol(symbol)}_{timeframe}_{start_ms}_{end_ms}.json",
+        )
+
+        def emit(stage, **extra):
+            if progress_callback:
+                progress_callback({"stage": stage, "symbol": symbol, "timeframe": timeframe,
+                                   "exchange": exchange, **extra})
+
+        if use_cache and os.path.isfile(cache_path):
+            try:
+                with open(cache_path, "r", encoding="utf-8") as f:
+                    cached = json.load(f)
+                if cached.get("count", 0) > 0 and cached.get("timestamps"):
+                    emit("CACHE_HIT", candles=cached["count"], cache_path=cache_path)
+                    return cached
+            except (OSError, json.JSONDecodeError, TypeError):
+                pass
+
+        emit("DOWNLOAD_START", cache_path=cache_path)
         rows = []
+        page = 0
         if exchange in ("binance", "mexc"):
             base = self.binance_base if exchange == "binance" else self.mexc_base
             interval = self._convert_tf_binance(timeframe)
@@ -648,7 +675,13 @@ class DataManager:
                             "startTime": cursor, "endTime": end_ms, "limit": 1000}, timeout=20,
                 )
                 payload = self._json_or_error(resp, exchange)
+                if isinstance(payload, dict):
+                    raise DataManagerError(
+                        f"{exchange}: {payload.get('msg') or payload}. جرّب kucoin للاختبار التاريخي."
+                    )
                 if not isinstance(payload, list) or not payload: break
+                page += 1
+                emit("DOWNLOAD_PAGE", page=page, candles_received=len(payload), candles_total=len(rows)+len(payload))
                 for x in payload:
                     rows.append({"ts": x[0], "o": x[1], "h": x[2], "l": x[3], "c": x[4], "v": x[5],
                                  "close_ts": x[6], "trades": x[8] if len(x)>8 else 0,
@@ -672,6 +705,8 @@ class DataManager:
                     raise DataManagerError(f"KuCoin: {payload.get('msg') or payload.get('code')}")
                 batch = payload.get("data") or []
                 if not batch: break
+                page += 1
+                emit("DOWNLOAD_PAGE", page=page, candles_received=len(batch), candles_total=len(rows)+len(batch))
                 for x in batch:
                     ts = int(float(x[0]) * 1000)
                     if start_ms <= ts <= end_ms:
@@ -694,6 +729,8 @@ class DataManager:
                 if payload.get("code") != "0": raise DataManagerError(f"OKX: {payload.get('msg')}")
                 batch = payload.get("data") or []
                 if not batch: break
+                page += 1
+                emit("DOWNLOAD_PAGE", page=page, candles_received=len(batch), candles_total=len(rows)+len(batch))
                 for x in batch:
                     ts = int(x[0])
                     if start_ms <= ts <= end_ms:
@@ -708,11 +745,25 @@ class DataManager:
                 f"الباك تست الزمني يدعم Binance وMEXC وKuCoin وOKX، وليس {exchange}. لا تبديل صامت."
             )
         data = self._finalize_rows(rows, symbol, timeframe, exchange, 0, True)
-        if not data: return None
+        if not data:
+            emit("DOWNLOAD_EMPTY", pages=page)
+            return None
         keep = [i for i, ts in enumerate(data["timestamps"]) if start_ms <= ts <= end_ms]
-        if not keep: return None
+        if not keep:
+            emit("DOWNLOAD_EMPTY", pages=page)
+            return None
         first, last = keep[0], keep[-1]
-        return self._slice_indices(data, first, last)
+        result = self._slice_indices(data, first, last)
+        result["historical_range"] = {"start_ms": start_ms, "end_ms": end_ms}
+        try:
+            temp = cache_path + ".tmp"
+            with open(temp, "w", encoding="utf-8") as f:
+                json.dump(result, f, ensure_ascii=False, separators=(",", ":"))
+            os.replace(temp, cache_path)
+        except OSError as exc:
+            self.logger.warning("Historical cache write failed: %s", exc)
+        emit("DOWNLOAD_DONE", pages=page, candles=result["count"], cache_path=cache_path)
+        return result
 
     @staticmethod
     def _slice_indices(data, first, last):

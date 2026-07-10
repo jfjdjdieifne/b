@@ -55,7 +55,9 @@ def test_multi_timeframe_pins_resolved_exchange(monkeypatch):
     assert all(call[2] is False for call in calls[1:])
 
 
-def test_kucoin_historical_paginates_backward(monkeypatch):
+def test_kucoin_historical_paginates_backward(monkeypatch, tmp_path):
+    from config import Config
+    monkeypatch.setattr(Config, "DATA_DIR", str(tmp_path))
     dm = DataManager()
     pages = [
         [["300","1","2","3","0.5","10","20"],["200","1","2","3","0.5","10","20"]],
@@ -66,8 +68,16 @@ def test_kucoin_historical_paginates_backward(monkeypatch):
         def __init__(self,data): self.data=data
         def json(self): return {"code":"200000","data":self.data}
     monkeypatch.setattr(dm.session,"get",lambda *a,**k: Response(pages.pop(0)))
-    data=dm.get_historical_ohlcv("ETH/USDT","1m",100_000,300_000,"kucoin")
+    events=[]
+    data=dm.get_historical_ohlcv(
+        "ETH/USDT","1m",100_000,300_000,"kucoin",
+        progress_callback=events.append,use_cache=False,
+    )
     assert data["timestamps"] == [100_000,150_000,200_000,300_000]
+    assert sum(e["stage"] == "DOWNLOAD_PAGE" for e in events) == 2
+    monkeypatch.setattr(dm.session,"get",lambda *a,**k: (_ for _ in ()).throw(AssertionError("network called despite cache")))
+    cached=dm.get_historical_ohlcv("ETH/USDT","1m",100_000,300_000,"kucoin")
+    assert cached["count"] == 4
 
 
 def test_explicit_exchange_does_not_fallback(monkeypatch):
