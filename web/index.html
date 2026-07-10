@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07111f">
+  <title>مرصد السوق — تحليل موثّق ومتابعة سريعة</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="ambient one"></div><div class="ambient two"></div>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">M</span>
+      <div><strong>مرصد السوق</strong><small>تحليل شموع مغلقة • بلا تخمين</small></div>
+    </div>
+    <div id="clock" class="clock">جاري ضبط الوقت…</div>
+  </header>
+
+  <main class="shell">
+    <section class="hero">
+      <div>
+        <span class="eyebrow">ICT / SMC ANALYSIS DESK</span>
+        <h1>افهم كل فريم، ثم اتخذ قرارك.</h1>
+        <p>اليومي و4 ساعات و15 دقيقة تُحلّل تلقائياً. أنت تختار فقط دقة التنفيذ والمنصة، وكل رقم موثّق بوقت نيويورك ودمشق.</p>
+      </div>
+      <div class="truth-card">
+        <span class="pulse"></span>
+        <div><b>الوضع الآمن</b><small>لا تحليل لشمعة مفتوحة • لا تبديل منصة بصمت • Pending ≠ صفقة</small></div>
+      </div>
+    </section>
+
+    <nav class="tabs" aria-label="أقسام التطبيق">
+      <button class="tab active" data-tab="analysis">التحليل</button>
+      <button class="tab" data-tab="trades">متابعة الصفقات <span id="tradeCount" class="count">0</span></button>
+      <button class="tab" data-tab="guide">كيف يعمل؟</button>
+    </nav>
+
+    <section id="analysisTab" class="panel tab-panel active">
+      <form id="analysisForm" class="analysis-form">
+        <label><span>الزوج</span><input id="symbol" value="ETH/USDT" placeholder="ETH/USDT" autocomplete="off"></label>
+        <label><span>المنصة</span><select id="exchange"><option value="auto">تلقائي</option></select></label>
+        <label><span>فريم التنفيذ <i class="help" title="البوت سيحلل 1D و4H و15m تلقائياً. هذا الاختيار فقط لدقة إشارة الدخول.">؟</i></span>
+          <select id="executionTf"><option value="5m">5 دقائق — أوضح</option><option value="3m">3 دقائق — متوازن</option><option value="1m">1 دقيقة — ضجيج أعلى</option></select>
+        </label>
+        <label><span>رأس المال $</span><input id="balance" type="number" value="100" min="1" step="0.01"></label>
+        <label><span>المخاطرة %</span><input id="risk" type="number" value="1" min="0.1" max="5" step="0.1"></label>
+        <button id="analyzeBtn" class="primary" type="submit"><span>حلّل الآن</span><b>←</b></button>
+      </form>
+      <div class="form-note">لا تحتاج أن تختار كل الفريمات. البوت يغلق التسلسل تلقائياً: <b>1D ← 4H ← 15m ← تنفيذ</b>.</div>
+      <div id="analysisLoading" class="loading hidden"><span></span><div><b>نبني خريطة الفريمات…</b><small>نجلب كل الفريمات من نفس المنصة ونستبعد الشمعة المفتوحة</small></div></div>
+      <div id="analysisError" class="error-box hidden"></div>
+      <div id="analysisResult"></div>
+    </section>
+
+    <section id="tradesTab" class="panel tab-panel">
+      <div class="section-head"><div><span class="eyebrow">AUTO MONITOR</span><h2>الصفقات المتابعة</h2></div><button id="refreshTrades" class="ghost">تحديث الكل</button></div>
+      <p class="muted">تحديث بضغطة واحدة: دخول ← TP1 يغلق 50% وينقل الستوب للتعادل ← TP2 أو ملاحقة HL/LH. التطبيق لا يرسل أوامر مالية للمنصة.</p>
+      <div id="tradesList" class="trades-grid"></div>
+    </section>
+
+    <section id="guideTab" class="panel tab-panel prose">
+      <span class="eyebrow">NO BLACK BOX</span><h2>شو يعني الفريم؟</h2>
+      <div class="guide-grid">
+        <article><b>1D — الخريطة</b><p>كل شمعة تمثل يوماً. نبحث عن اتجاه التسليم والهدف الكبير للسيولة، لا ندخل منه.</p></article>
+        <article><b>4H — السياق</b><p>هل الحركة الحالية تدعم اليومي أم تصحّح ضده؟ وأين مناطق الـPD Array الأهم؟</p></article>
+        <article><b>15m — التكتيك</b><p>أين السيولة داخل الجلسة؟ هل حصل sweep، displacement، FVG أو كسر هيكلي؟</p></article>
+        <article><b>1–5m — التنفيذ</b><p>ننتظر تأكيداً حديثاً قرب المنطقة. اختيارك هنا ليس «على كيفك» بل درجة دقة مقابل ضجيج.</p></article>
+      </div>
+      <h3>ليش أحياناً ما في TP2 رقمي؟</h3>
+      <p>TP1 هو أقرب مستوى سيولة حقيقي. TP2 لا يُثبت إلا إذا وجد هدف أبعد مدعوم بتأكيدات مستقلة. إذا لم يوجد، يظهر <b>Runner / Trailing</b> بدل اختراع «هدف ذهبي».</p>
+      <h3>ماذا لا يفعل التطبيق؟</h3>
+      <ul><li>لا يحوّل PENDING إلى Limit Order قبل displacement وFVG والتأكيد.</li><li>لا يعدك بنسبة نجاح؛ الباك تست الافتراضي لا يساوي التنفيذ الحقيقي.</li><li>لا يحدد عدد صفقات يومي أو شهري. السوق والشروط هما اللذان يحددان.</li></ul>
+    </section>
+  </main>
+  <footer>أداة تعليمية وليست نصيحة مالية. التداول يحمل احتمال خسارة رأس المال.</footer>
+  <script src="/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+# Secrets
+.env
+*.env
+!.env.example
+
+# Runtime data (keep only the audited legacy knowledge constitution)
+data/*
+!data/trading_knowledge.txt
+*.log
+*_report_*.json
+
+# Python / tests / virtual environments
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Editors / OS
+.DS_Store
+.idea/
+.vscode/
