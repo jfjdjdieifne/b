@@ -149,6 +149,7 @@ class Handler(BaseHTTPRequestHandler):
                         slippage_bps=payload.get("slippage_bps", 2),
                         tp1_allocation_pct=payload.get("tp1_allocation_pct", 50),
                         checkpoint_minutes=payload.get("checkpoint_minutes", 15),
+                        post_tp1_stop_policy=payload.get("post_tp1_stop_policy", "BE_THEN_STRUCTURE"),
                     )
                 finally:
                     BACKTEST_LOCK.release()

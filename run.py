@@ -38,6 +38,8 @@ def run_backtest():
     risk=float(input("المخاطرة % [1]: ").strip() or 1)
     alloc=float(input("إغلاق TP1 % [50]: ").strip() or 50)
     checkpoint=int(input("كل كم دقيقة نفحص؟ [15] (5=مطابق أكثر للايف وأبطأ، 60=سريع): ").strip() or 15)
+    trail_choice=input("بعد TP1: 1=BE ثم HL/LH، 2=اترك SL حتى HL/LH [1]: ").strip() or "1"
+    trail_policy="STRUCTURE_ONLY" if trail_choice=="2" else "BE_THEN_STRUCTURE"
 
     def progress(event):
         stage=event.get("stage")
@@ -61,6 +63,7 @@ def run_backtest():
     r=WalkForwardBacktester().run(
         symbol,start,end,exchange=exchange,initial_balance=capital,risk_pct=risk,
         tp1_allocation_pct=alloc,checkpoint_minutes=checkpoint,progress_callback=progress,
+        post_tp1_stop_policy=trail_policy,
     )
     print(f"{r['id']} | صفقات {r['trade_count']} | {r['wins']}W/{r['losses']}L | "
           f"${r['initial_balance']} → ${r['final_balance']} ({r['return_pct']}%) | {r['runtime_seconds']}s")

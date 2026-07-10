@@ -64,7 +64,8 @@ class WalkForwardBacktester:
 
     def run(self, symbol, start, end, exchange="kucoin", execution_timeframe="5m",
             initial_balance=100.0, risk_pct=1.0, fee_bps=10.0, slippage_bps=2.0,
-            tp1_allocation_pct=None, progress_callback=None, checkpoint_minutes=15):
+            tp1_allocation_pct=None, progress_callback=None, checkpoint_minutes=15,
+            post_tp1_stop_policy="BE_THEN_STRUCTURE"):
         symbol = self.dm.normalize_symbol(symbol)
         exchange = self.dm.normalize_exchange(exchange)
         tf = self.dm.normalize_timeframe(execution_timeframe)
@@ -199,6 +200,7 @@ class WalkForwardBacktester:
                 candidate["targets"][0]["price"], tp2_info,
                 is_short="SELL" in candidate["side"],
                 tp1_fraction=tp1_allocation_pct/100,
+                post_tp1_stop_policy=post_tp1_stop_policy,
             )
             risk_per_unit = abs(candidate["entry"]-candidate["stop_loss"])
             risk_budget = balance*float(risk_pct)/100
@@ -272,6 +274,7 @@ class WalkForwardBacktester:
             "net_pnl": round(balance-float(initial_balance),6),
             "return_pct": round((balance/float(initial_balance)-1)*100,3),
             "risk_pct": float(risk_pct), "tp1_allocation_pct": tp1_allocation_pct,
+            "post_tp1_stop_policy": str(post_tp1_stop_policy).upper(),
             "fee_bps_each_side": float(fee_bps),
             "slippage_bps_each_side": float(slippage_bps), "checkpoints": checkpoints,
             "signals": signals, "no_fills": no_fills, "trades": trades,
@@ -481,7 +484,9 @@ class WalkForwardBacktester:
                            "price": outcome.get("tp1_price")})
         for move in outcome.get("trail_history", []) or []:
             events.append({"event": move.get("reason", "TRAIL_MOVE"),
-                           "candle_index": move.get("idx_from_start"),
+                           "confirmed_at_index": move.get("confirmed_at_idx", move.get("idx_from_start")),
+                           "pivot_index": move.get("pivot_idx"),
+                           "effective_from_index": move.get("effective_from_idx"),
                            "new_stop": move.get("new_sl")})
         events.append({"event": outcome.get("final_exit_reason", outcome.get("classification")),
                        "time": outcome.get("final_exit_time"),

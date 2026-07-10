@@ -147,6 +147,14 @@ README_AR.md                              شرح القضية بالعربي
 
 ويُنشأ ZIP واحد يحوي كل القضايا. تشخيص الخسارة يبين MFE/MAE بوحدة R وهل ضُرب SL ثم وصل TP1 خلال 24 ساعة، وهي قرينة على SL ضيق وليست حكماً قطعياً.
 
+لمقارنة إدارة خمس صفقات حقيقية محفوظة بنفس Entry/SL/TP والشموع:
+
+```bash
+python scripts/compare_management_policies.py data/backtests/WFT-xxxxxxxxxx --count 5
+```
+
+يقارن 80%+BE، و50%+BE، و50% Structure-only، و20% عند TP1 مع Runner كبير. لا يغير الخطة بعد معرفة النتيجة.
+
 للتدقيق الجاهز لآخر 30 يوماً على خمسة أزواج سائلة عبر KuCoin:
 
 ```bash

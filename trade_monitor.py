@@ -77,6 +77,9 @@ class TradeMonitor:
         allocation = float(payload.get("tp1_allocation_pct") or Config.TP1_ALLOCATION_PCT)
         if not 1 <= allocation <= 100:
             raise ValueError("نسبة TP1 يجب أن تكون بين 1 و100%")
+        stop_policy = str(payload.get("post_tp1_stop_policy") or Config.POST_TP1_STOP_POLICY).upper()
+        if stop_policy not in ("BE_THEN_STRUCTURE", "STRUCTURE_ONLY"):
+            raise ValueError("سياسة Runner غير صالحة")
         requested_status = str(payload.get("status") or "watchlist").lower()
         status = requested_status if requested_status in ("watchlist", "pending_entry", "active") else "watchlist"
         now = dual_time()
@@ -93,6 +96,7 @@ class TradeMonitor:
             "tp1": tp1,
             "tp2": tp2,
             "tp1_allocation_pct": allocation,
+            "post_tp1_stop_policy": stop_policy,
             "quantity": float(payload.get("quantity") or 0),
             "risk_usd": float(payload.get("risk_usd") or 0),
             "notification_chat_id": payload.get("notification_chat_id"),
@@ -278,13 +282,17 @@ class TradeMonitor:
         trade["tp1_hit"] = True
         trade["remaining_pct"] = round(100 - allocation, 4)
         trade["realized_r"] = round(fraction * r1, 3)
-        trade["current_stop_loss"] = trade["entry"]
+        policy = trade.get("post_tp1_stop_policy", "BE_THEN_STRUCTURE")
         if allocation >= 100:
             trade["status"] = "closed"
             self._event(trade, "TP1_FULL_EXIT", "أُغلق كامل المركز عند TP1 حسب النسبة المختارة", ts)
         else:
             trade["status"] = "runner"
-            self._event(trade, "TP1_HIT", f"أُغلق {allocation}% ونُقل الستوب إلى نقطة الدخول تلقائياً", ts)
+            if policy == "BE_THEN_STRUCTURE":
+                trade["current_stop_loss"] = trade["entry"]
+                self._event(trade, "TP1_HIT", f"أُغلق {allocation}% ونُقل SL إلى BE ثم يبدأ HL/LH", ts)
+            else:
+                self._event(trade, "TP1_HIT", f"أُغلق {allocation}% وبقي SL الأصلي حتى يؤكد HL/LH جديد", ts)
 
     def _stop(self, trade: dict, ts, reason: str):
         trade["status"] = "stopped"

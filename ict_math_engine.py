@@ -1572,7 +1572,8 @@ def find_tp_targets(data, entry_price, sl_price, is_long, lookback=150,
 
 def simulate_managed_trade_outcome(candles, entry_price, sl_price, tp1_price, tp2_info,
                                     is_short, entry_idx=0, swing_window=2,
-                                    tp1_fraction=0.5):
+                                    tp1_fraction=0.5,
+                                    post_tp1_stop_policy="BE_THEN_STRUCTURE"):
     """
     يحاكي سياسة المشروع المعلنة شمعة بشمعة. أخذ partials عند مستويات
     منطقية مدعوم بالمحاضرات، أما النسبة ونقل BE فخيارات محاكاة صريحة:
@@ -1613,6 +1614,9 @@ def simulate_managed_trade_outcome(candles, entry_price, sl_price, tp1_price, tp
     """
     tp1_fraction = min(1.0, max(0.0, float(tp1_fraction)))
     runner_fraction = 1.0 - tp1_fraction
+    post_tp1_stop_policy = str(post_tp1_stop_policy).upper()
+    if post_tp1_stop_policy not in ("BE_THEN_STRUCTURE", "STRUCTURE_ONLY"):
+        raise ValueError("post_tp1_stop_policy must be BE_THEN_STRUCTURE or STRUCTURE_ONLY")
     highs = candles.get("highs", [])
     lows = candles.get("lows", [])
     closes = candles.get("closes", [])
@@ -1721,38 +1725,30 @@ def simulate_managed_trade_outcome(candles, entry_price, sl_price, tp1_price, tp
                 if tp1_fraction >= 1.0:
                     final_exit_price, final_exit_reason, final_exit_idx = tp1_price, "TP1_FULL_EXIT", i
                     break
-                current_sl = entry_price
-                trail_history.append({"idx_from_start": i, "new_sl": current_sl, "reason": "TP1_HIT_BREAKEVEN"})
+                if post_tp1_stop_policy == "BE_THEN_STRUCTURE":
+                    current_sl = entry_price
+                    trail_history.append({
+                        "confirmed_at_idx": i, "effective_from_idx": i + 1,
+                        "new_sl": current_sl, "reason": "TP1_HIT_MOVE_TO_BREAKEVEN",
+                    })
+                else:
+                    trail_history.append({
+                        "confirmed_at_idx": i, "effective_from_idx": i + 1,
+                        "new_sl": current_sl,
+                        "reason": "TP1_HIT_KEEP_ORIGINAL_UNTIL_CONFIRMED_STRUCTURE",
+                    })
                 continue
         else:
-            # ── المرحلة 3: بعد TP1 - Structure Trail (Method 1، القسم 14.5) ──
-            # تحديث تتبّع سوينغ جديد (تأكيد بشمعتين، swing_window=2)
-            if i >= swing_window and i < n - swing_window:
-                window_h = highs[max(0, i - swing_window):i + swing_window + 1]
-                window_l = lows[max(0, i - swing_window):i + swing_window + 1]
-                if not is_short and lo == min(window_l) and len(window_l) == 2 * swing_window + 1:
-                    swing_lows_seen.append((i, lo))
-                if is_short and hi == max(window_h) and len(window_h) == 2 * swing_window + 1:
-                    swing_highs_seen.append((i, hi))
-
-            # نحرّك الستوب خلف آخر سوينغ مؤكد (لا يتراجع للخلف أبداً - RULE 6)
-            if not is_short and swing_lows_seen:
-                candidate_sl = swing_lows_seen[-1][1]
-                if candidate_sl > current_sl:
-                    current_sl = candidate_sl
-                    trail_history.append({"idx_from_start": i, "new_sl": current_sl, "reason": "STRUCTURE_TRAIL_HL"})
-            if is_short and swing_highs_seen:
-                candidate_sl = swing_highs_seen[-1][1]
-                if candidate_sl < current_sl:
-                    current_sl = candidate_sl
-                    trail_history.append({"idx_from_start": i, "new_sl": current_sl, "reason": "STRUCTURE_TRAIL_LH"})
-
+            # المرحلة 3: افحص أوامر SL/TP2 الموجودة **قبل** استعمال إغلاق
+            # الشمعة الحالية لتأكيد swing جديد. التحديث يصبح فعالاً من
+            # الشمعة التالية فقط؛ غير ذلك يوقف الصفقة بأثر رجعي.
             hit_trail = (hi >= current_sl) if is_short else (lo <= current_sl)
             hit_tp2 = (tp2_info.get("mode") == "TARGET") and (
                 (lo <= tp2_info["price"]) if is_short else (hi >= tp2_info["price"])
             )
             if hit_trail and hit_tp2:
-                final_exit_price, final_exit_reason, final_exit_idx = tp2_info["price"], "TP2_HIT", i
+                # لا نملك tick order داخل OHLC؛ السياسة المحافظة SL أولاً.
+                final_exit_price, final_exit_reason, final_exit_idx = current_sl, "TRAILING_STOP_HIT_SAME_CANDLE_TP2", i
                 break
             if hit_tp2:
                 final_exit_price, final_exit_reason, final_exit_idx = tp2_info["price"], "TP2_HIT", i
@@ -1760,6 +1756,34 @@ def simulate_managed_trade_outcome(candles, entry_price, sl_price, tp1_price, tp
             if hit_trail:
                 final_exit_price, final_exit_reason, final_exit_idx = current_sl, "TRAILING_STOP_HIT", i
                 break
+
+            # عند إغلاق candle i صار pivot عند i-swing_window مؤكداً؛
+            # نافذته تستخدم الماضي حتى i فقط، بلا i+1/i+2 مستقبلية.
+            pivot_i = i - swing_window
+            if pivot_i >= swing_window:
+                start_w = pivot_i - swing_window
+                end_w = i + 1
+                window_h = highs[start_w:end_w]
+                window_l = lows[start_w:end_w]
+                if len(window_h) == 2 * swing_window + 1:
+                    if not is_short and lows[pivot_i] == min(window_l):
+                        candidate_sl = lows[pivot_i]
+                        if candidate_sl > current_sl:
+                            current_sl = candidate_sl
+                            trail_history.append({
+                                "confirmed_at_idx": i, "pivot_idx": pivot_i,
+                                "effective_from_idx": i + 1, "new_sl": current_sl,
+                                "reason": "STRUCTURE_TRAIL_CONFIRMED_HL",
+                            })
+                    if is_short and highs[pivot_i] == max(window_h):
+                        candidate_sl = highs[pivot_i]
+                        if candidate_sl < current_sl:
+                            current_sl = candidate_sl
+                            trail_history.append({
+                                "confirmed_at_idx": i, "pivot_idx": pivot_i,
+                                "effective_from_idx": i + 1, "new_sl": current_sl,
+                                "reason": "STRUCTURE_TRAIL_CONFIRMED_LH",
+                            })
 
     if final_exit_price is None:
         # لم يُحسم بعد خلال النافذة المتاحة
@@ -1781,7 +1805,7 @@ def simulate_managed_trade_outcome(candles, entry_price, sl_price, tp1_price, tp
     elif final_exit_reason == "TP2_HIT":
         classification = "WIN_FULL"
         pnl_blended = tp1_fraction * _pnl_pct(tp1_price) + runner_fraction * _pnl_pct(final_exit_price)
-    elif final_exit_reason == "TRAILING_STOP_HIT":
+    elif str(final_exit_reason).startswith("TRAILING_STOP_HIT"):
         if abs(final_exit_price - entry_price) < abs(entry_price) * 0.0005:
             classification = "WIN_PARTIAL"  # التريلينغ ضرب قريب جداً من الدخول = BE فعلياً
         else:
@@ -1809,6 +1833,7 @@ def simulate_managed_trade_outcome(candles, entry_price, sl_price, tp1_price, tp
         "final_exit_idx_from_start": final_exit_idx,
         "final_exit_time": timestamps[final_exit_idx] if (final_exit_idx is not None and final_exit_idx < len(timestamps)) else None,
         "pnl_pct_blended": round(pnl_blended, 3),
+        "post_tp1_stop_policy": post_tp1_stop_policy,
         "trail_history": trail_history,
     }
     return result
