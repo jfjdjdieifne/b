@@ -12,6 +12,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse
 
+from config import Config
 from data_manager import DataManager
 from snapshot_analyzer import SnapshotAnalyzer
 from trade_monitor import TradeMonitor
@@ -84,6 +85,23 @@ class Handler(BaseHTTPRequestHandler):
             return self._json(200, {"ok": True, "journal": PAPER.journal_with_scenarios()})
         if path == "/api/agent":
             return self._json(200, {"ok": True, "agent": AGENT.status()})
+        if path == "/api/backtests":
+            folder = Path(Config.DATA_DIR) / "backtests"
+            files = sorted(folder.glob("WFT-*.json"), key=lambda p: p.stat().st_mtime, reverse=True) if folder.exists() else []
+            return self._json(200, {"ok": True, "reports": [p.stem for p in files]})
+        if path.startswith("/api/backtests/"):
+            report_id = path.rsplit("/", 1)[-1]
+            if not report_id.startswith("WFT-") or not report_id.replace("-", "").isalnum():
+                return self._json(400, {"ok": False, "error_ar": "معرف تقرير غير صالح"})
+            report_path = Path(Config.DATA_DIR) / "backtests" / f"{report_id}.json"
+            if not report_path.is_file():
+                return self._json(404, {"ok": False, "error_ar": "التقرير غير موجود"})
+            body = report_path.read_bytes()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Content-Disposition", f'attachment; filename="{report_id}.json"')
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers(); self.wfile.write(body); return
         return self._serve_static(path)
 
     def do_POST(self):
