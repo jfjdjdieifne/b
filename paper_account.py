@@ -84,6 +84,7 @@ class PaperAccount:
                 "timeframe": tracked_trade["timeframe"], "model": tracked_trade.get("model"),
                 "side": tracked_trade["side"], "planned_entry": tracked_trade["entry"],
                 "planned_stop": tracked_trade["initial_stop_loss"],
+                "stop_rationale": tracked_trade.get("stop_rationale"),
                 "planned_tp1": tracked_trade["tp1"], "planned_tp2": tracked_trade.get("tp2"),
                 "tp1_allocation_pct": tracked_trade.get("tp1_allocation_pct", 50),
                 "why_entered": candidate.get("basis"),

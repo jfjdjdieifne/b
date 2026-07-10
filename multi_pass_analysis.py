@@ -1271,39 +1271,14 @@ class MultiPassAnalysis:
 
     @staticmethod
     def _min_sl_buffer_distance(last_price, atr_val):
-        """
-        ⚠️ حل جذري لفجوة حقيقية اكتُشفت (يوليو 2026، بطلب صريح من
-        المستخدم بعد ملاحظة أن البوت يخسر بمسافات SL ضيقة جداً بصفقتين
-        حيتين متتاليتين رغم اجتيازهما كل الفحوصات الرياضية القائمة):
-        الدستور نفسه (قسم [RISK_ENGINE] 15.3 "STOP LOSS PLACEMENT
-        RULES - THE BUFFER") ينص صراحة: "SL لا يُوضع عند المستوى
-        الهيكلي مباشرة - بل أبعد منه بهامش أمان (buffer) يحمي من
-        فتيل سحب سيولة يخترق المستوى لحظياً قبل الارتداد (وهو حدث
-        صاعد لصالح الـOB، لا إبطال له). buffer = max(0.3×ATR(14),
-        0.2% من السعر) - الأكبر منهما".
+        """Deprecated compatibility shim.
 
-        **لكن هذا الـbuffer لم يكن محسوباً رياضياً بالكود إطلاقاً** -
-        كان نصاً تعليمياً فقط بالدستور، يعتمد على "قراءة الموديل له
-        وتطبيقه بنفسه" - بالضبط نفس فئة الخطأ المُصلَحة سابقاً بمشاكل
-        SL%/R:R (فجوة بين نص الدستور والفحص الفعلي بالكود). **تحقق
-        رياضي مباشر على صفقة حية فعلية (BTC #1)**: البوت استخدم مسافة
-        SL كاملة = 150 وحدة سعر، بينما مجرد الـbuffer وحدها (بلا حتى
-        احتساب المسافة للمستوى الهيكلي نفسه) كانت تتطلب 152.3 وحدة
-        (0.3×86.66 ATR = 26، أو 0.2%×76150 = 152.3، الأكبر منهما) -
-        أي أن الـSL بالكامل كان **أضيق من الـbuffer المطلوبة وحدها**،
-        فوُضع تقريباً عند المستوى الهيكلي مباشرة بلا أي هامش أمان
-        حقيقي - وهذا يفسّر مباشرة لماذا خسرت الصفقة بفارق ضئيل جداً
-        (فتيل سحب سيولة عادي، لا انعكاس حقيقي، كفى لضرب الـSL).
-
-        Returns: أقل مسافة سعر (float) يجب أن تُضاف كـbuffer فوق/تحت
-        المستوى الهيكلي نفسه - لا تُستخدم بمفردها كحد أدنى نهائي (ما
-        زال يجب أن يكون المستوى الهيكلي + هذا الـbuffer معاً).
+        Stop breathing room cannot be derived from price/ATR alone because the
+        causal model and recent same-side wick data are required. New code uses
+        ``_place_structural_stop``. Returning zero prevents this legacy helper
+        from silently imposing the old fixed percentage formula.
         """
-        if not last_price:
-            return 0
-        atr_buffer = 0.3 * atr_val if atr_val else 0
-        pct_buffer = last_price * 0.002
-        return max(atr_buffer, pct_buffer)
+        return 0.0
 
     def _compute_min_sl_hint(self, symbol, timeframe, entry_ind, entry_data, daily_bias=None):
         """
@@ -1341,26 +1316,19 @@ class MultiPassAnalysis:
             if not last_price:
                 return ""
 
-            atr_val = (entry_ind or {}).get("atr")
-            buffer_dist = self._min_sl_buffer_distance(last_price, atr_val)
+            from ict_entry_checklist_engine import _structural_wick_buffer
+            is_long_hint = daily_bias == "BULLISH"
+            buffer_dist = _structural_wick_buffer(entry_data, is_long_hint)
 
             note = (
-                f"\n⚠️ PRE-COMPUTED MECHANICAL SL BUFFER (per [RISK_ENGINE] 15.3, "
-                f"this is a structural placement rule, NOT a risk-management percentage "
-                f"cap - your SL distance is otherwise completely free, determined solely "
-                f"by where the real structural level sits): whatever real structural "
-                f"level (Order Block edge, swing point, or liquidity-sweep extreme) you "
-                f"identify as the invalidation point, place your actual stop_loss "
-                f"{buffer_dist:.4g} price-units BEYOND it (for a LONG: structural_level - "
-                f"{buffer_dist:.4g}; for a SHORT: structural_level + {buffer_dist:.4g}) - "
-                f"this small buffer protects against a normal liquidity-sweep wick "
-                f"piercing the level briefly before reversing, which is NOT genuine "
-                f"invalidation. There is NO minimum or maximum percentage distance "
-                f"requirement here - place the stop exactly where Michael's (ICT) "
-                f"methodology says it structurally belongs, however wide or tight that "
-                f"turns out to be numerically. A separate, purely informational "
-                f"risk-management comparison happens AFTER this analysis is complete - "
-                f"it does not constrain this structural placement."
+                f"\n⚠️ STRUCTURAL STOP CONCEPT (not a fixed point/percent rule): first "
+                f"identify the causal low/high whose violation disproves this exact model "
+                f"(sweep extreme, BOS origin, or outer edge of the entry PD array). Place "
+                f"SL beyond that anchor, not at a risk-reward-friendly number. Recent "
+                f"same-side wick noise has a median of {buffer_dist:.4g} price-units; this "
+                f"is a data-derived breathing-room estimate, not an ICT constant. There is "
+                f"NO minimum/maximum percentage distance: position size adapts to the "
+                f"structural stop. Risk comparison happens only after analysis."
             )
 
             # ⚠️ قائمة المستويات الهيكلية الحقيقية القريبة - الموديل
@@ -1866,18 +1834,27 @@ class MultiPassAnalysis:
             if not isinstance(entry, (int, float)):
                 return None
 
-            atr_val = (entry_ind or {}).get("atr")
-            buffer_dist = self._min_sl_buffer_distance(entry, atr_val)
             sl_result = find_structural_sl_anchors(entry_data, is_long=is_long, reference_price=entry)
             anchors = sl_result.get("anchors", [])
             if not anchors:
                 return None
 
-            anchor_price = anchors[0]["price"]
-            fixed_sl = (anchor_price - buffer_dist) if is_long else (anchor_price + buffer_dist)
+            # The free-form AI path cannot prove which anchor caused its entry.
+            # Do not silently choose the nearest one to improve RR. Require an
+            # explicit causal anchor from the derived plan; otherwise re-derive/HOLD.
+            rationale = final_result.get("stop_rationale") or {}
+            anchor_price = rationale.get("anchor_price")
+            if not isinstance(anchor_price, (int, float)):
+                return None
+            from ict_entry_checklist_engine import _place_structural_stop
+            fixed_sl, fixed_rationale = _place_structural_stop(
+                entry_data, float(anchor_price), is_long,
+                rationale.get("anchor_kind", "AI_DECLARED_CAUSAL_ANCHOR"),
+            )
 
             fixed_result = dict(final_result)
             fixed_result["stop_loss"] = round(float(fixed_sl), 6)
+            fixed_result["stop_rationale"] = fixed_rationale
             fixed_result["_sl_mechanically_fixed"] = True
             fixed_result["_sl_mechanical_fix_anchor"] = anchors[0]
             return fixed_result

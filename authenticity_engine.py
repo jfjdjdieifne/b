@@ -1661,10 +1661,10 @@ class AuthenticityEngine:
         from ict_math_engine import find_structural_sl_anchors
 
         try:
-            from multi_pass_analysis import MultiPassAnalysis
-            buffer_dist = MultiPassAnalysis._min_sl_buffer_distance(entry, atr_val)
+            from ict_entry_checklist_engine import _structural_wick_buffer
+            buffer_dist = _structural_wick_buffer(data, is_long)
         except Exception:
-            buffer_dist = abs(entry) * 0.002  # احتياط بسيط لو الاستيراد فشل لأي سبب
+            buffer_dist = 0.0
 
         # ⚠️ إصلاح جذري (يوليو 2026، اكتُشف بتحقق مباشر بعد نداء حي):
         # يجب البحث عن مستويات هيكلية حول سعر **الدخول المخطَّط**

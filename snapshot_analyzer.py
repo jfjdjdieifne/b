@@ -371,6 +371,7 @@ class SnapshotAnalyzer:
                 for c in chosen.get("conditions", [])
             ],
             "basis": plan.get("basis"),
+            "stop_rationale": plan.get("stop_rationale"),
             "lifecycle": lifecycle,
             "tracking_payload": {
                 "symbol": entry["symbol"], "exchange": entry["source"],
@@ -379,6 +380,8 @@ class SnapshotAnalyzer:
                 "tp1": tp1, "tp2": tp2_obj.get("price") if tp2_obj.get("mode") == "TARGET" else None,
                 "quantity": round(qty, 8), "risk_usd": round(risk_usd, 4),
                 "tp1_allocation_pct": tp1_allocation_pct,
+                "stop_rationale": plan.get("stop_rationale"),
+                "post_tp1_stop_policy": Config.POST_TP1_STOP_POLICY,
                 "expires_at_ms": lifecycle["expires_at_ms"],
                 "activation_allowed": state in ("READY_NOW", "ORDER_READY"),
                 "status": "pending_entry" if state in ("READY_NOW", "ORDER_READY") else "watchlist",
@@ -420,7 +423,8 @@ class SnapshotAnalyzer:
             trace.append({
                 "step": "PLAN_AND_TARGETS",
                 "input": {"entry": candidate.get("entry"), "stop": candidate.get("stop_loss")},
-                "output": {"targets": candidate.get("targets"), "runner": candidate.get("runner"),
+                "output": {"stop_rationale": candidate.get("stop_rationale"),
+                           "targets": candidate.get("targets"), "runner": candidate.get("runner"),
                            "lifecycle": candidate.get("lifecycle")},
                 "basis": "TP1 active unswept level; TP2 needs confluence + horizon compatibility",
             })

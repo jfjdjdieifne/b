@@ -83,15 +83,45 @@ def _build_plan_with_tp1_tp2(data, entry_price, sl_price, is_long, basis_prefix,
     return targets
 
 
-def _min_sl_buffer(last_price, atr_val):
-    """سياسة buffer تشغيلية للبوت: max(0.3×ATR, 0.2%×price).
+def _structural_wick_buffer(data, is_long, lookback=50):
+    """Data-derived breathing room beyond the *causal* invalidation anchor.
 
-    ليست نسبة موحدة منشورة من مايكل لكل سوق؛ يجب معايرتها باختبار مستقل.
-    النسخة محلية هنا لتفادي استيراد دائري مع multi_pass_analysis.py.
+    Michael's rule is structural (below/above the low/high that invalidates the
+    setup), not a universal percent or point count. For automation we estimate
+    normal wick noise from recent candles and use one inferred price tick as a
+    floor. No ATR multiple or percentage target is imposed.
     """
-    if not last_price:
+    opens = np.asarray(data.get("opens", []), dtype=float)
+    highs = np.asarray(data.get("highs", []), dtype=float)
+    lows = np.asarray(data.get("lows", []), dtype=float)
+    closes = np.asarray(data.get("closes", []), dtype=float)
+    n = len(closes)
+    if n == 0:
         return 0.0
-    return max(0.3 * (atr_val or 0), last_price * 0.002)
+    start = max(0, n - lookback)
+    if is_long:
+        wicks = np.minimum(opens[start:], closes[start:]) - lows[start:]
+    else:
+        wicks = highs[start:] - np.maximum(opens[start:], closes[start:])
+    positive_wicks = wicks[wicks > 0]
+    typical_wick = float(np.median(positive_wicks)) if len(positive_wicks) else 0.0
+    values = np.unique(np.concatenate((opens[start:], highs[start:], lows[start:], closes[start:])))
+    diffs = np.diff(np.sort(values))
+    diffs = diffs[diffs > 1e-12]
+    inferred_tick = float(np.percentile(diffs, 10)) if len(diffs) else max(abs(closes[-1]) * 1e-8, 1e-8)
+    return max(typical_wick, inferred_tick)
+
+
+def _place_structural_stop(data, anchor_price, is_long, anchor_kind):
+    buffer_dist = _structural_wick_buffer(data, is_long)
+    stop = anchor_price - buffer_dist if is_long else anchor_price + buffer_dist
+    return stop, {
+        "anchor_price": round(float(anchor_price), 8),
+        "anchor_kind": anchor_kind,
+        "buffer_method": "MEDIAN_RELEVANT_WICK_WITH_INFERRED_TICK_FLOOR",
+        "buffer_distance": round(float(buffer_dist), 8),
+        "concept": "beyond the causal high/low that invalidates the setup",
+    }
 
 
 def _last_atr(data):
@@ -287,11 +317,11 @@ def evaluate_model_a(data, daily_bias, lookback=60, htf_data_sources=None):
 
     # ── بناء خطة كاملة الأرقام (Model A: entry=OB CE, SL=below/above OB + buffer, TP=nearest opposing liquidity) ──
     entry_price = (chosen_ob["top"] + chosen_ob["bottom"]) / 2
-    buffer_dist = _min_sl_buffer(last_price, atr_val)
-    if is_long:
-        sl_price = chosen_ob["bottom"] - buffer_dist
-    else:
-        sl_price = chosen_ob["top"] + buffer_dist
+    causal_anchor = min(chosen_ob["bottom"], impulse_origin) if is_long else max(chosen_ob["top"], impulse_origin)
+    sl_price, stop_rationale = _place_structural_stop(
+        data, causal_anchor, is_long,
+        "WIDEST_OF_ENTRY_OB_EDGE_AND_IMPULSE_ORIGIN",
+    )
 
     # TP1/TP2 يُحسبان من مستويات هيكلية حقيقية، لا من entry+3×SL.
     # إذا لم يوجد مستوى صالح باتجاه الصفقة فلا توجد خطة؛ وإلا نعرض R:R
@@ -315,6 +345,7 @@ def evaluate_model_a(data, daily_bias, lookback=60, htf_data_sources=None):
         "direction": "BUY_LIMIT" if is_long else "SELL_LIMIT",
         "entry": round(float(entry_price), 6),
         "stop_loss": round(float(sl_price), 6),
+        "stop_rationale": stop_rationale,
         "tp": tp1["price"],  # توافق خلفي - يبقى يشير لـTP1 دائماً
         "tp1": tp1, "tp2": tp2,
         "rr": tp1["rr"],
@@ -490,13 +521,13 @@ def evaluate_model_b(data, daily_bias, lookback=60, htf_data_sources=None):
             "watch_for": "DISPLACEMENT_THEN_FVG_RETRACE",
         }
 
-    buffer_dist = _min_sl_buffer(last_price, atr_val)
     chosen_fvg = relevant_fvgs[-1]
     entry_price = chosen_fvg["ce"]
-    if is_long:
-        sl_price = min(swept_level, chosen_fvg["bottom"]) - buffer_dist
-    else:
-        sl_price = max(swept_level, chosen_fvg["top"]) + buffer_dist
+    causal_anchor = min(swept_level, chosen_fvg["bottom"]) if is_long else max(swept_level, chosen_fvg["top"])
+    sl_price, stop_rationale = _place_structural_stop(
+        data, causal_anchor, is_long,
+        "LIQUIDITY_SWEEP_EXTREME_OR_FVG_OUTER_EDGE",
+    )
 
     # TP1/TP2 حقيقيان من EQH/EQL/سوينغ غير مسحوب/OB معاكس؛ لا هدف
     # حسابي تعسفي ولا شرط يجبر اختيار مستوى بعيد فقط لتحسين R:R.
@@ -521,6 +552,7 @@ def evaluate_model_b(data, daily_bias, lookback=60, htf_data_sources=None):
             "direction": "BUY_LIMIT" if is_long else "SELL_LIMIT",
             "entry": round(float(entry_price), 6),
             "stop_loss": round(float(sl_price), 6),
+            "stop_rationale": stop_rationale,
             "tp": tp1["price"],  # توافق خلفي - يشير لـTP1 دائماً
             "tp1": tp1, "tp2": tp2,
             "rr": tp1["rr"],
@@ -652,11 +684,18 @@ def evaluate_model_c(data, daily_bias, lookback=60, htf_data_sources=None):
     # الخطة: entry=OB CE، SL خلف منطقة الإبطال + buffer، ثم أقرب هدف
     # ما زال نشطاً وغير مسحوب. المستوى المكسور ليس سيولة مستقبلية تلقائياً.
     entry_price = (chosen_ob["top"] + chosen_ob["bottom"]) / 2
-    buffer_dist = _min_sl_buffer(last_price, atr_val)
+    causal_slice_start = max(0, window_start)
+    causal_slice_end = min(n, break_candle_idx + 1)
     if is_long:
-        sl_price = chosen_ob["bottom"] - buffer_dist
+        bos_origin = float(lows[causal_slice_start:causal_slice_end].min())
+        causal_anchor = min(chosen_ob["bottom"], bos_origin)
     else:
-        sl_price = chosen_ob["top"] + buffer_dist
+        bos_origin = float(highs[causal_slice_start:causal_slice_end].max())
+        causal_anchor = max(chosen_ob["top"], bos_origin)
+    sl_price, stop_rationale = _place_structural_stop(
+        data, causal_anchor, is_long,
+        "WIDEST_OF_BOS_ORIGIN_AND_ENTRY_OB_EDGE",
+    )
 
     sl_dist = abs(entry_price - sl_price)
     # The broken BOS level was already crossed by definition, so treating it
@@ -687,6 +726,7 @@ def evaluate_model_c(data, daily_bias, lookback=60, htf_data_sources=None):
         "direction": "BUY_LIMIT" if is_long else "SELL_LIMIT",
         "entry": round(float(entry_price), 6),
         "stop_loss": round(float(sl_price), 6),
+        "stop_rationale": stop_rationale,
         "tp": tp1["price"],  # توافق خلفي - يشير لـTP1 دائماً
         "tp1": tp1, "tp2": tp2,
         "rr": tp1["rr"],
@@ -1017,19 +1057,19 @@ def evaluate_model_d(data, daily_bias, lookback=60, htf_data_sources=None):
                    if cond5 else "No FVG formed from distribution yet (or distribution itself still pending)"),
     })
 
-    buffer_dist = _min_sl_buffer(last_price, atr_val)
     if cond5 and relevant_fvgs:
         chosen_fvg = relevant_fvgs[-1]
         entry_price = chosen_fvg["ce"]
-        sl_price = (acc_low - buffer_dist) if is_long else (acc_high + buffer_dist)
     elif manip_idx is not None:
-        # خطة احتياطية: الدخول عند إعادة اختبار طرف نطاق التجميع نفسه
         entry_price = acc_low if is_long else acc_high
-        sl_price = (acc_low - buffer_dist) if is_long else (acc_high + buffer_dist)
     else:
         return {"model": "MODEL_D_AMD_SESSION", "status": "PENDING_SETUP" if cond2 else "DISQUALIFIED",
                 "conditions": conditions, "plan": None}
 
+    causal_anchor = acc_low if is_long else acc_high
+    sl_price, stop_rationale = _place_structural_stop(
+        data, causal_anchor, is_long, "AMD_MANIPULATION_ACCUMULATION_EXTREME"
+    )
     targets = find_tp_targets(data, entry_price, sl_price, is_long=is_long, lookback=lookback,
                                htf_data_sources=htf_data_sources)
     cond6 = targets.get("tp1") is not None
@@ -1048,6 +1088,7 @@ def evaluate_model_d(data, daily_bias, lookback=60, htf_data_sources=None):
         "direction": "BUY_LIMIT" if is_long else "SELL_LIMIT",
         "entry": round(float(entry_price), 6),
         "stop_loss": round(float(sl_price), 6),
+        "stop_rationale": stop_rationale,
         "tp": tp1["price"], "tp1": tp1, "tp2": tp2,
         "rr": tp1["rr"],
         "basis": ("Model D (AMD Session): entry=FVG CE from distribution displacement (or accumulation "
@@ -1176,8 +1217,10 @@ def evaluate_model_e(data, daily_bias, lookback=60, htf_data_sources=None):
     })
 
     entry_price = chosen_fvg["ce"]
-    buffer_dist = _min_sl_buffer(last_price, atr_val)
-    sl_price = (chosen_fvg["bottom"] - buffer_dist) if is_long else (chosen_fvg["top"] + buffer_dist)
+    causal_anchor = chosen_fvg["bottom"] if is_long else chosen_fvg["top"]
+    sl_price, stop_rationale = _place_structural_stop(
+        data, causal_anchor, is_long, "SILVER_BULLET_FVG_OUTER_EDGE"
+    )
 
     targets = find_tp_targets(data, entry_price, sl_price, is_long=is_long, lookback=lookback,
                                htf_data_sources=htf_data_sources)
@@ -1197,6 +1240,7 @@ def evaluate_model_e(data, daily_bias, lookback=60, htf_data_sources=None):
         "direction": "BUY_LIMIT" if is_long else "SELL_LIMIT",
         "entry": round(float(entry_price), 6),
         "stop_loss": round(float(sl_price), 6),
+        "stop_rationale": stop_rationale,
         "tp": tp1["price"], "tp1": tp1, "tp2": tp2,
         "rr": tp1["rr"],
         "basis": ("Model E (Silver Bullet): entry=FVG CE from in-window displacement, "
@@ -1342,9 +1386,12 @@ def evaluate_model_f(data, daily_bias, lookback=60, htf_data_sources=None, htf_m
     else:
         entry_price = last_price
 
-    pre_choch_extreme = float(lows[:pre_break_swing_idx + 1].min()) if is_long else float(highs[:pre_break_swing_idx + 1].max())
-    buffer_dist = _min_sl_buffer(last_price, atr_val)
-    sl_price = (pre_choch_extreme - buffer_dist) if is_long else (pre_choch_extreme + buffer_dist)
+    local_start = max(0, pre_break_swing_idx - lookback)
+    pre_choch_extreme = (float(lows[local_start:pre_break_swing_idx + 1].min())
+                         if is_long else float(highs[local_start:pre_break_swing_idx + 1].max()))
+    sl_price, stop_rationale = _place_structural_stop(
+        data, pre_choch_extreme, is_long, "PRE_CHOCH_LIQUIDITY_EXTREME"
+    )
 
     targets = find_tp_targets(data, entry_price, sl_price, is_long=is_long, lookback=lookback,
                                htf_data_sources=htf_data_sources)
@@ -1364,6 +1411,7 @@ def evaluate_model_f(data, daily_bias, lookback=60, htf_data_sources=None, htf_m
         "direction": "BUY_LIMIT" if is_long else "SELL_LIMIT",
         "entry": round(float(entry_price), 6),
         "stop_loss": round(float(sl_price), 6),
+        "stop_rationale": stop_rationale,
         "tp": tp1["price"], "tp1": tp1, "tp2": tp2,
         "rr": tp1["rr"],
         "basis": ("Model F (CHoCH Reversal): entry=OB/FVG CE from CHoCH displacement, SL=beyond the "
@@ -1503,9 +1551,10 @@ def evaluate_generic_structural_fallback(data, daily_bias, lookback=150, htf_dat
         "detail": f"Chosen SL anchor (widest of entry-zone edge vs nearest separate anchor): {chosen_sl_anchor_price} ({chosen_sl_anchor_kind})",
     })
 
-    buffer_dist = _min_sl_buffer(last_price, _last_atr(data))
     anchor_price = chosen_sl_anchor_price
-    sl_price = (anchor_price - buffer_dist) if is_long else (anchor_price + buffer_dist)
+    sl_price, stop_rationale = _place_structural_stop(
+        data, anchor_price, is_long, chosen_sl_anchor_kind
+    )
 
     targets = find_tp_targets(data, entry_price, sl_price, is_long=is_long,
                                htf_data_sources=htf_data_sources)
@@ -1526,6 +1575,7 @@ def evaluate_generic_structural_fallback(data, daily_bias, lookback=150, htf_dat
         "direction": "BUY_LIMIT" if is_long else "SELL_LIMIT",
         "entry": round(float(entry_price), 6),
         "stop_loss": round(float(sl_price), 6),
+        "stop_rationale": stop_rationale,
         "tp": tp1["price"],
         "tp1": tp1, "tp2": tp2,
         "rr": tp1["rr"],

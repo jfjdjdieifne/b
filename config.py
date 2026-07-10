@@ -146,7 +146,7 @@ class Config:
     PAPER_DEFAULT_RISK_PCT = float(os.getenv("PAPER_DEFAULT_RISK_PCT", "1"))
     PAPER_MAX_TOTAL_RISK_PCT = float(os.getenv("PAPER_MAX_TOTAL_RISK_PCT", "5"))
     TP1_ALLOCATION_PCT = float(os.getenv("TP1_ALLOCATION_PCT", "50"))
-    POST_TP1_STOP_POLICY = os.getenv("POST_TP1_STOP_POLICY", "BE_THEN_STRUCTURE").strip().upper()
+    POST_TP1_STOP_POLICY = os.getenv("POST_TP1_STOP_POLICY", "ICT_RANGE_PROGRESS").strip().upper()
 
     MTF_ENABLED = True
 

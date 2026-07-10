@@ -78,7 +78,7 @@ class TradeMonitor:
         if not 1 <= allocation <= 100:
             raise ValueError("نسبة TP1 يجب أن تكون بين 1 و100%")
         stop_policy = str(payload.get("post_tp1_stop_policy") or Config.POST_TP1_STOP_POLICY).upper()
-        if stop_policy not in ("BE_THEN_STRUCTURE", "STRUCTURE_ONLY"):
+        if stop_policy not in ("ICT_RANGE_PROGRESS", "BE_THEN_STRUCTURE", "STRUCTURE_ONLY"):
             raise ValueError("سياسة Runner غير صالحة")
         requested_status = str(payload.get("status") or "watchlist").lower()
         status = requested_status if requested_status in ("watchlist", "pending_entry", "active") else "watchlist"
@@ -93,6 +93,7 @@ class TradeMonitor:
             "entry": entry,
             "initial_stop_loss": sl,
             "current_stop_loss": sl,
+            "stop_rationale": payload.get("stop_rationale"),
             "tp1": tp1,
             "tp2": tp2,
             "tp1_allocation_pct": allocation,
@@ -254,6 +255,8 @@ class TradeMonitor:
                 self._stop(trade, ts, "SL hit before TP1")
             elif hit_tp1:
                 self._hit_tp1(trade, ts)
+            else:
+                self._update_ict_range_progress(trade, high, low, ts)
             return
 
         hit_tp2 = bool(tp2 is not None and ((high >= tp2) if is_long else (low <= tp2)))
@@ -274,6 +277,30 @@ class TradeMonitor:
         else:
             self._trail_structure(trade, data, i, ts)
 
+    def _update_ict_range_progress(self, trade, high, low, ts):
+        if trade.get("post_tp1_stop_policy") != "ICT_RANGE_PROGRESS":
+            return
+        entry, tp1, initial = trade["entry"], trade["tp1"], trade["initial_stop_loss"]
+        expected = abs(tp1 - entry)
+        if expected <= 0:
+            return
+        is_long = "BUY" in trade["side"]
+        favorable = high - entry if is_long else entry - low
+        progress = favorable / expected
+        if progress >= 0.75:
+            candidate = entry
+            reason = "ICT_75_PERCENT_TO_BREAKEVEN"
+        elif progress >= 0.50:
+            candidate = initial + 0.25 * (entry - initial)
+            reason = "ICT_50_PERCENT_REDUCE_INITIAL_RISK_25_PERCENT"
+        else:
+            return
+        improves = candidate > trade["current_stop_loss"] if is_long else candidate < trade["current_stop_loss"]
+        if improves:
+            trade["current_stop_loss"] = candidate
+            self._event(trade, reason,
+                        f"تقدم السعر {progress*100:.1f}% من المسافة المتوقعة؛ SL الجديدة {candidate}", ts)
+
     def _hit_tp1(self, trade: dict, ts):
         risk = abs(trade["entry"] - trade["initial_stop_loss"])
         r1 = abs(trade["tp1"] - trade["entry"]) / risk if risk else 0
@@ -288,7 +315,7 @@ class TradeMonitor:
             self._event(trade, "TP1_FULL_EXIT", "أُغلق كامل المركز عند TP1 حسب النسبة المختارة", ts)
         else:
             trade["status"] = "runner"
-            if policy == "BE_THEN_STRUCTURE":
+            if policy in ("ICT_RANGE_PROGRESS", "BE_THEN_STRUCTURE"):
                 trade["current_stop_loss"] = trade["entry"]
                 self._event(trade, "TP1_HIT", f"أُغلق {allocation}% ونُقل SL إلى BE ثم يبدأ HL/LH", ts)
             else:

@@ -65,7 +65,7 @@ class WalkForwardBacktester:
     def run(self, symbol, start, end, exchange="kucoin", execution_timeframe="5m",
             initial_balance=100.0, risk_pct=1.0, fee_bps=10.0, slippage_bps=2.0,
             tp1_allocation_pct=None, progress_callback=None, checkpoint_minutes=15,
-            post_tp1_stop_policy="BE_THEN_STRUCTURE"):
+            post_tp1_stop_policy="ICT_RANGE_PROGRESS"):
         symbol = self.dm.normalize_symbol(symbol)
         exchange = self.dm.normalize_exchange(exchange)
         tf = self.dm.normalize_timeframe(execution_timeframe)
@@ -538,6 +538,7 @@ class WalkForwardBacktester:
 - التوقع الشرطي: `{json.dumps(analysis.get('expectation'), ensure_ascii=False)}`
 - Entry: **{candidate.get('entry')}**
 - SL: **{candidate.get('stop_loss')}**
+- فكرة SL: `{json.dumps(candidate.get('stop_rationale'), ensure_ascii=False)}`
 - Targets: `{json.dumps(candidate.get('targets'), ensure_ascii=False)}`
 - أساس الخطة: {candidate.get('basis')}
 

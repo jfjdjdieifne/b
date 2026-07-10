@@ -38,8 +38,8 @@ def run_backtest():
     risk=float(input("المخاطرة % [1]: ").strip() or 1)
     alloc=float(input("إغلاق TP1 % [50]: ").strip() or 50)
     checkpoint=int(input("كل كم دقيقة نفحص؟ [15] (5=مطابق أكثر للايف وأبطأ، 60=سريع): ").strip() or 15)
-    trail_choice=input("بعد TP1: 1=BE ثم HL/LH، 2=اترك SL حتى HL/LH [1]: ").strip() or "1"
-    trail_policy="STRUCTURE_ONLY" if trail_choice=="2" else "BE_THEN_STRUCTURE"
+    trail_choice=input("إدارة SL: 1=ICT 50%/75%، 2=BE بعد TP1، 3=Structure-only [1]: ").strip() or "1"
+    trail_policy={"1":"ICT_RANGE_PROGRESS","2":"BE_THEN_STRUCTURE","3":"STRUCTURE_ONLY"}.get(trail_choice,"ICT_RANGE_PROGRESS")
 
     def progress(event):
         stage=event.get("stage")

@@ -1615,8 +1615,8 @@ def simulate_managed_trade_outcome(candles, entry_price, sl_price, tp1_price, tp
     tp1_fraction = min(1.0, max(0.0, float(tp1_fraction)))
     runner_fraction = 1.0 - tp1_fraction
     post_tp1_stop_policy = str(post_tp1_stop_policy).upper()
-    if post_tp1_stop_policy not in ("BE_THEN_STRUCTURE", "STRUCTURE_ONLY"):
-        raise ValueError("post_tp1_stop_policy must be BE_THEN_STRUCTURE or STRUCTURE_ONLY")
+    if post_tp1_stop_policy not in ("ICT_RANGE_PROGRESS", "BE_THEN_STRUCTURE", "STRUCTURE_ONLY"):
+        raise ValueError("invalid post_tp1_stop_policy")
     highs = candles.get("highs", [])
     lows = candles.get("lows", [])
     closes = candles.get("closes", [])
@@ -1713,10 +1713,10 @@ def simulate_managed_trade_outcome(candles, entry_price, sl_price, tp1_price, tp
             if hit_sl and hit_tp1:
                 # نفس الشمعة - نتبع سياسة compute_trade_outcome المحافظة
                 # (نفترض أسوأ حالة: SL أولاً) للاتساق مع بقية المشروع
-                final_exit_price, final_exit_reason, final_exit_idx = sl_price, "SL_HIT_BEFORE_TP1", i
+                final_exit_price, final_exit_reason, final_exit_idx = current_sl, "SL_HIT_BEFORE_TP1", i
                 break
             if hit_sl:
-                final_exit_price, final_exit_reason, final_exit_idx = sl_price, "SL_HIT_BEFORE_TP1", i
+                final_exit_price, final_exit_reason, final_exit_idx = current_sl, "SL_HIT_BEFORE_TP1", i
                 break
             if hit_tp1:
                 tp1_hit = True
@@ -1725,7 +1725,7 @@ def simulate_managed_trade_outcome(candles, entry_price, sl_price, tp1_price, tp
                 if tp1_fraction >= 1.0:
                     final_exit_price, final_exit_reason, final_exit_idx = tp1_price, "TP1_FULL_EXIT", i
                     break
-                if post_tp1_stop_policy == "BE_THEN_STRUCTURE":
+                if post_tp1_stop_policy in ("ICT_RANGE_PROGRESS", "BE_THEN_STRUCTURE"):
                     current_sl = entry_price
                     trail_history.append({
                         "confirmed_at_idx": i, "effective_from_idx": i + 1,
@@ -1738,6 +1738,32 @@ def simulate_managed_trade_outcome(candles, entry_price, sl_price, tp1_price, tp
                         "reason": "TP1_HIT_KEEP_ORIGINAL_UNTIL_CONFIRMED_STRUCTURE",
                     })
                 continue
+
+            if post_tp1_stop_policy == "ICT_RANGE_PROGRESS" and tp1_price is not None:
+                expected = abs(tp1_price - entry_price)
+                favorable = (entry_price - lo) if is_short else (hi - entry_price)
+                progress = favorable / expected if expected > 0 else 0
+                if progress >= 0.75:
+                    candidate_sl = entry_price
+                    improves = candidate_sl < current_sl if is_short else candidate_sl > current_sl
+                    if improves:
+                        current_sl = candidate_sl
+                        trail_history.append({
+                            "confirmed_at_idx": i, "effective_from_idx": i + 1,
+                            "new_sl": current_sl, "range_progress": round(progress, 4),
+                            "reason": "ICT_75_PERCENT_TO_BREAKEVEN",
+                        })
+                elif progress >= 0.50:
+                    candidate_sl = (sl_price - 0.25 * (sl_price - entry_price)
+                                    if is_short else sl_price + 0.25 * (entry_price - sl_price))
+                    improves = candidate_sl < current_sl if is_short else candidate_sl > current_sl
+                    if improves:
+                        current_sl = candidate_sl
+                        trail_history.append({
+                            "confirmed_at_idx": i, "effective_from_idx": i + 1,
+                            "new_sl": current_sl, "range_progress": round(progress, 4),
+                            "reason": "ICT_50_PERCENT_REDUCE_INITIAL_RISK_25_PERCENT",
+                        })
         else:
             # المرحلة 3: افحص أوامر SL/TP2 الموجودة **قبل** استعمال إغلاق
             # الشمعة الحالية لتأكيد swing جديد. التحديث يصبح فعالاً من
@@ -1798,7 +1824,7 @@ def simulate_managed_trade_outcome(candles, entry_price, sl_price, tp1_price, tp
     # ── تصنيف حسب قسم 14.6/1.7 بالدستور بالضبط ──
     if final_exit_reason == "SL_HIT_BEFORE_TP1":
         classification = "LOSS"
-        pnl_blended = _pnl_pct(sl_price)  # 100% من المركز يخسر مسافة SL كاملة
+        pnl_blended = _pnl_pct(final_exit_price)
     elif final_exit_reason == "TP1_FULL_EXIT":
         classification = "WIN_TP1_FULL_EXIT"
         pnl_blended = _pnl_pct(tp1_price)

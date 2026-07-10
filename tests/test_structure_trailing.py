@@ -20,6 +20,19 @@ def test_structure_trail_uses_confirmed_past_pivot_and_next_candle_only():
     assert result["final_exit_idx_from_start"] == 5
 
 
+def test_ict_range_progress_moves_risk_relatively_not_static_points():
+    candles={"opens":[100,104,109],"highs":[105,110,111],"lows":[99,99,91],
+             "closes":[104,109,92],"timestamps":[0,1,2]}
+    result=simulate_managed_trade_outcome(
+        candles,100,90,120,{"mode":"OPEN_TRAILING"},False,
+        tp1_fraction=.5,post_tp1_stop_policy="ICT_RANGE_PROGRESS",
+    )
+    moves=[x for x in result["trail_history"] if x["reason"]=="ICT_50_PERCENT_REDUCE_INITIAL_RISK_25_PERCENT"]
+    assert moves[0]["new_sl"] == 92.5
+    assert moves[0]["effective_from_idx"] == 2
+    assert result["final_exit_price"] == 92.5
+
+
 def test_structure_only_does_not_force_be_at_tp1():
     candles={"opens":[100,110],"highs":[111,111],"lows":[99,95],"closes":[110,96],"timestamps":[0,1]}
     result=simulate_managed_trade_outcome(

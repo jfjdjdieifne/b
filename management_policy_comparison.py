@@ -11,6 +11,8 @@ from pathlib import Path
 from ict_math_engine import simulate_managed_trade_outcome
 
 POLICIES = (
+    ("ICT_80_RANGE_PROGRESS", 0.80, "ICT_RANGE_PROGRESS"),
+    ("ICT_50_RANGE_PROGRESS", 0.50, "ICT_RANGE_PROGRESS"),
     ("80_BE", 0.80, "BE_THEN_STRUCTURE"),
     ("50_BE", 0.50, "BE_THEN_STRUCTURE"),
     ("50_STRUCTURE", 0.50, "STRUCTURE_ONLY"),

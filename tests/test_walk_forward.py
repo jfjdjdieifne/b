@@ -46,7 +46,7 @@ def test_trade_audit_bundle_contains_before_after_and_forensics(tmp_path):
     from management_policy_comparison import compare_bundle
     comparison=compare_bundle(str(tmp_path),count=1)
     assert comparison["case_count"] == 1
-    assert set(comparison["summary"]) == {"80_BE","50_BE","50_STRUCTURE","20_STRUCTURE_BIG_RUNNER"}
+    assert set(comparison["summary"]) == {"ICT_80_RANGE_PROGRESS","ICT_50_RANGE_PROGRESS","80_BE","50_BE","50_STRUCTURE","20_STRUCTURE_BIG_RUNNER"}
     from backtest_forensics import generate_forensics
     forensic=generate_forensics(str(tmp_path),{
         "id":"WFT-X","trade_count":1,"win_rate":100,"return_pct":2,
