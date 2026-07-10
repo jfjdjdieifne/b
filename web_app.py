@@ -19,6 +19,7 @@ from trade_monitor import TradeMonitor
 from paper_account import PaperAccount
 from market_agent import MarketAgent
 from walk_forward_backtest import WalkForwardBacktester
+from management_policy_comparison import compare_bundle
 from user_utils import dual_time
 
 ROOT = Path(__file__).resolve().parent
@@ -172,6 +173,14 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(200, {"ok": True, "agent": AGENT.start(**payload)})
             if path == "/api/agent/stop":
                 return self._json(200, {"ok": True, "agent": AGENT.stop()})
+            if path.startswith("/api/backtests/") and path.endswith("/compare-policies"):
+                parts = [p for p in path.split("/") if p]
+                report_id = parts[2] if len(parts) == 4 else ""
+                if not report_id.startswith("WFT-") or not report_id.replace("-", "").isalnum():
+                    return self._json(400, {"ok": False, "error_ar": "معرف تقرير غير صالح"})
+                bundle = Path(Config.DATA_DIR) / "backtests" / report_id
+                comparison = compare_bundle(bundle, int(payload.get("count", 5)))
+                return self._json(200, {"ok": True, "comparison": comparison})
             parts = [p for p in path.split("/") if p]
             if len(parts) == 4 and parts[:2] == ["api", "trades"]:
                 trade_id, action = parts[2], parts[3]

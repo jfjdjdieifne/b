@@ -43,3 +43,7 @@ def test_trade_audit_bundle_contains_before_after_and_forensics(tmp_path):
     assert manifest["sha256"]["02_ohlc_before_signal_5m.json"]
     outcome_doc=json.load(open(os.path.join(case,"04_outcome_and_management.json"),encoding="utf8"))
     assert "forensic_diagnosis" in outcome_doc
+    from management_policy_comparison import compare_bundle
+    comparison=compare_bundle(str(tmp_path),count=1)
+    assert comparison["case_count"] == 1
+    assert set(comparison["summary"]) == {"80_BE","50_BE","50_STRUCTURE","20_STRUCTURE_BIG_RUNNER"}
