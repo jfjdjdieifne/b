@@ -19,5 +19,7 @@ jobs/*/build/
 jobs/*/audio/
 *.mp4
 !examples/**/*.mp4
+# final renders are deliverable: keep delivery/ committable
+!delivery/**/*.mp4
 !jobs/*/vo/*.mp3
 !.gitkeep

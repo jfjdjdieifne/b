@@ -1,0 +1,274 @@
+{
+  "schema_version": 1,
+  "job": "pyramids-void-30s",
+  "title": "The Sealed Chamber \u2014 Arena Only",
+  "output": "/home/user/b/video-factory/outputs/pyramids_void.mp4",
+  "output_sha256": "0c4cfc20e370bd0b80deaccc2e5a450524d2b00d829cdf738f3c23fcbd3b6516",
+  "bytes": 36722003,
+  "duration": 30.014,
+  "resolution": [
+    1080,
+    1920
+  ],
+  "fps": 30,
+  "narration_total": 26.614,
+  "beats": [
+    {
+      "beat": 1,
+      "start": 0.15,
+      "end": 2.739,
+      "duration": 2.589,
+      "move": "in",
+      "amount": 0.2,
+      "grade": "desert_lift",
+      "keys": [
+        "s01_a.jpg",
+        "s01_b.jpg"
+      ],
+      "caption": "A SEALED CHAMBER",
+      "transition_in": 0.0,
+      "master": "build/masters/beat_01.mp4",
+      "motion": {
+        "frames": 78,
+        "duration": 2.6,
+        "mean_diff": 2.583,
+        "p05_diff": 1.116,
+        "freeze_frames": 2
+      }
+    },
+    {
+      "beat": 2,
+      "start": 2.739,
+      "end": 4.23,
+      "duration": 1.491,
+      "move": "creep",
+      "amount": 0.16,
+      "grade": "desert_lift",
+      "keys": [
+        "s01_b.jpg",
+        null
+      ],
+      "caption": "A SEALED CHAMBER",
+      "transition_in": 0.55,
+      "master": "build/masters/beat_02.mp4",
+      "motion": {
+        "frames": 48,
+        "duration": 1.6,
+        "mean_diff": 2.998,
+        "p05_diff": 1.459,
+        "freeze_frames": 0
+      }
+    },
+    {
+      "beat": 3,
+      "start": 4.23,
+      "end": 8.372,
+      "duration": 4.142,
+      "move": "creep",
+      "amount": 0.3,
+      "grade": "lab",
+      "keys": [
+        "s03_a.jpg",
+        "s03_b.jpg"
+      ],
+      "caption": "2017: COSMIC RAYS",
+      "transition_in": 0.55,
+      "master": "build/masters/beat_03.mp4",
+      "motion": {
+        "frames": 126,
+        "duration": 4.2,
+        "mean_diff": 2.64,
+        "p05_diff": 0.816,
+        "freeze_frames": 5
+      }
+    },
+    {
+      "beat": 4,
+      "start": 8.372,
+      "end": 11.178,
+      "duration": 2.806,
+      "move": "lateral",
+      "amount": 0.3,
+      "grade": "neutral",
+      "keys": [
+        "s04_a.jpg",
+        "s04_b.jpg"
+      ],
+      "caption": "THE SIZE OF A PASSENGER JET",
+      "transition_in": 0.55,
+      "master": "build/masters/beat_04.mp4",
+      "motion": {
+        "frames": 84,
+        "duration": 2.8,
+        "mean_diff": 6.62,
+        "p05_diff": 2.094,
+        "freeze_frames": 3
+      }
+    },
+    {
+      "beat": 5,
+      "start": 11.178,
+      "end": 14.495,
+      "duration": 3.317,
+      "move": "in_fast",
+      "amount": 0.3,
+      "grade": "dig",
+      "keys": [
+        "s02_a.jpg",
+        "s02_b.jpg"
+      ],
+      "caption": "HIDDEN FOR 4,500 YEARS",
+      "transition_in": 0.55,
+      "master": "build/masters/beat_05.mp4",
+      "motion": {
+        "frames": 102,
+        "duration": 3.4,
+        "mean_diff": 5.34,
+        "p05_diff": 1.699,
+        "freeze_frames": 1
+      }
+    },
+    {
+      "beat": 6,
+      "start": 14.495,
+      "end": 16.763,
+      "duration": 2.268,
+      "move": "tilt_up",
+      "amount": 0.28,
+      "grade": "bright_cave",
+      "keys": [
+        "s05_a.jpg",
+        "s05_b.jpg"
+      ],
+      "caption": "LOOK AGAIN",
+      "transition_in": 0.55,
+      "master": "build/masters/beat_06.mp4",
+      "motion": {
+        "frames": 72,
+        "duration": 2.4,
+        "mean_diff": 3.204,
+        "p05_diff": 1.194,
+        "freeze_frames": 0
+      }
+    },
+    {
+      "beat": 7,
+      "start": 16.763,
+      "end": 20.398,
+      "duration": 3.635,
+      "move": "out",
+      "amount": 0.3,
+      "grade": "bright_cave",
+      "keys": [
+        "s08_a.jpg",
+        "s08_b.jpg"
+      ],
+      "caption": "A CORRIDOR DROPS BELOW",
+      "transition_in": 0.55,
+      "master": "build/masters/beat_07.mp4",
+      "motion": {
+        "frames": 108,
+        "duration": 3.6,
+        "mean_diff": 2.111,
+        "p05_diff": 0.693,
+        "freeze_frames": 2
+      }
+    },
+    {
+      "beat": 8,
+      "start": 20.398,
+      "end": 23.476,
+      "duration": 3.078,
+      "move": "in_fast",
+      "amount": 0.3,
+      "grade": "bright_cave",
+      "keys": [
+        "s09_a.jpg",
+        "s09_b.jpg"
+      ],
+      "caption": "AND THE WRITING GETS OLDER",
+      "transition_in": 0.55,
+      "master": "build/masters/beat_08.mp4",
+      "motion": {
+        "frames": 96,
+        "duration": 3.2,
+        "mean_diff": 4.766,
+        "p05_diff": 1.278,
+        "freeze_frames": 0
+      }
+    },
+    {
+      "beat": 9,
+      "start": 23.476,
+      "end": 26.614,
+      "duration": 3.138,
+      "move": "track",
+      "amount": 0.3,
+      "grade": "soft_inscription",
+      "keys": [
+        "s10_a.jpg",
+        "s10_b.jpg"
+      ],
+      "caption": "NOT A TOMB. A MESSAGE.",
+      "transition_in": 0.55,
+      "master": "build/masters/beat_09.mp4",
+      "motion": {
+        "frames": 96,
+        "duration": 3.2,
+        "mean_diff": 7.658,
+        "p05_diff": 1.988,
+        "freeze_frames": 0
+      }
+    },
+    {
+      "beat": "outro",
+      "start": 26.614,
+      "end": 30.014,
+      "duration": 3.4,
+      "move": "out",
+      "keys": [
+        "s01_a.jpg"
+      ],
+      "master": "build/masters/outro.mp4",
+      "caption": "THE CHAMBER IS STILL SEALED"
+    }
+  ],
+  "motion": {
+    "file": "/home/user/b/video-factory/outputs/pyramids_void.mp4",
+    "frames": 901,
+    "fps": 30.0,
+    "duration": 30.033,
+    "mean_diff": 4.181,
+    "min_diff": 0.186,
+    "p05_diff": 0.997,
+    "max_diff": 38.361,
+    "freeze_frames": 10
+  },
+  "qa": {
+    "pass": false,
+    "checks": {
+      "duration": true,
+      "resolution": true,
+      "fps": true,
+      "decodable_frames": true,
+      "no_freeze_over_threshold": true,
+      "no_full_black_frame": false,
+      "safe_true_peak": true
+    },
+    "file": "/home/user/b/video-factory/outputs/pyramids_void.mp4",
+    "bytes": 36722003,
+    "duration": 30.033333333333335,
+    "width": 1080,
+    "height": 1920,
+    "fps": 30.0,
+    "frame_count": 901,
+    "median_frame_difference": 3.063185763888889,
+    "longest_low_motion_seconds": 0.06666666666666667,
+    "maximum_black_fraction": 1.0,
+    "integrated_lufs": -14.4,
+    "true_peak_dbfs": -1.5
+  },
+  "engine": "arena_only",
+  "built_at": "2026-10-01T04:06:52.261010+00:00",
+  "draft_only": true
+}

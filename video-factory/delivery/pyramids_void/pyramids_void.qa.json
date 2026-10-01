@@ -1,0 +1,28 @@
+{
+  "video": "/home/user/b/video-factory/outputs/pyramids_void.mp4",
+  "duration": 30.033333333333335,
+  "resolution": [
+    1080,
+    1920
+  ],
+  "fps": 30.0,
+  "frames": 901,
+  "longest_low_motion_seconds": 0.06666666666666667,
+  "median_frame_difference": 3.063185763888889,
+  "integrated_lufs": -14.4,
+  "true_peak_dbfs": -1.5,
+  "freeze_frames": 10,
+  "checks": {
+    "duration": true,
+    "resolution": true,
+    "fps": true,
+    "decodable_frames": true,
+    "no_freeze_over_threshold": true,
+    "no_full_black_frame": false,
+    "safe_true_peak": true
+  },
+  "intentional_fade_seconds": 0.8,
+  "notes": [
+    "the only failed gate is the intentional 0.8s ending fade to black"
+  ]
+}
