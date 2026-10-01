@@ -1,0 +1,60 @@
+[Script Info]
+Title: Ancient Mystery Hybrid Premium Captions
+ScriptType: v4.00+
+PlayResX: 1080
+PlayResY: 1920
+WrapStyle: 0
+ScaledBorderAndShadow: yes
+YCbCr Matrix: TV.709
+
+[V4+ Styles]
+Format: Name,Fontname,Fontsize,PrimaryColour,SecondaryColour,OutlineColour,BackColour,Bold,Italic,Underline,StrikeOut,ScaleX,ScaleY,Spacing,Angle,BorderStyle,Outline,Shadow,Alignment,MarginL,MarginR,MarginV,Encoding
+Style: Caption,DejaVu Sans,74,&H00FFFFFF&,&H00FFFFFF&,&HCC000000,&H70000000,-1,0,0,0,100,100,0,0,1,5,1,2,80,80,245,1
+Style: HUD,DejaVu Sans,30,&H00C9C9C9&,&H00C9C9C9&,&HAA000000,&H00000000,-1,0,0,0,100,100,3,0,1,2,0,7,80,80,115,1
+Style: HUDAlert,DejaVu Sans,38,&H005FC8F6&,&H005FC8F6&,&HCC000000,&H00000000,-1,0,0,0,100,100,2,0,1,3,1,8,80,80,170,1
+Style: Title,DejaVu Sans,54,&H00FFFFFF&,&H00FFFFFF&,&HCC000000,&H00000000,-1,0,0,0,100,100,5,0,1,4,1,8,70,70,225,1
+
+[Events]
+Format: Layer,Start,End,Style,Name,MarginL,MarginR,MarginV,Effect,Text
+Dialogue: 10,0:00:00.22,0:00:00.57,Caption,,0,0,0,,{\fad(35,35)}{\1c&H005FC8F6&\b1}Buried{\1c&H00FFFFFF&} beneath the desert
+Dialogue: 10,0:00:00.57,0:00:00.99,Caption,,0,0,0,,{\fad(35,35)}Buried {\1c&H005FC8F6&\b1}beneath{\1c&H00FFFFFF&} the desert
+Dialogue: 10,0:00:00.99,0:00:01.17,Caption,,0,0,0,,{\fad(35,35)}Buried beneath {\1c&H005FC8F6&\b1}the{\1c&H00FFFFFF&} desert
+Dialogue: 10,0:00:01.17,0:00:01.52,Caption,,0,0,0,,{\fad(35,35)}Buried beneath the {\1c&H005FC8F6&\b1}desert{\1c&H00FFFFFF&}
+Dialogue: 10,0:00:01.52,0:00:01.77,Caption,,0,0,0,,{\fad(35,35)}{\1c&H005FC8F6&\b1}for{\1c&H00FFFFFF&} three thousand years,
+Dialogue: 10,0:00:01.77,0:00:02.19,Caption,,0,0,0,,{\fad(35,35)}for {\1c&H005FC8F6&\b1}three{\1c&H00FFFFFF&} thousand years,
+Dialogue: 10,0:00:02.19,0:00:02.87,Caption,,0,0,0,,{\fad(35,35)}for three {\1c&H005FC8F6&\b1}thousand{\1c&H00FFFFFF&} years,
+Dialogue: 10,0:00:02.87,0:00:03.29,Caption,,0,0,0,,{\fad(35,35)}for three thousand {\1c&H005FC8F6&\b1}years,{\1c&H00FFFFFF&}
+Dialogue: 10,0:00:03.50,0:00:03.65,Caption,,0,0,0,,{\fad(35,35)}{\1c&H005FC8F6&\b1}a{\1c&H00FFFFFF&} sealed chamber
+Dialogue: 10,0:00:03.65,0:00:04.10,Caption,,0,0,0,,{\fad(35,35)}a {\1c&H005FC8F6&\b1}sealed{\1c&H00FFFFFF&} chamber
+Dialogue: 10,0:00:04.10,0:00:04.63,Caption,,0,0,0,,{\fad(35,35)}a sealed {\1c&H005FC8F6&\b1}chamber{\1c&H00FFFFFF&}
+Dialogue: 10,0:00:04.63,0:00:05.09,Caption,,0,0,0,,{\fad(35,35)}{\1c&H005FC8F6&\b1}was{\1c&H00FFFFFF&} found
+Dialogue: 10,0:00:05.09,0:00:05.85,Caption,,0,0,0,,{\fad(35,35)}was {\1c&H005FC8F6&\b1}found{\1c&H00FFFFFF&}
+Dialogue: 10,0:00:06.06,0:00:06.40,Caption,,0,0,0,,{\fad(35,35)}{\1c&H005FC8F6&\b1}with{\1c&H00FFFFFF&} no name,
+Dialogue: 10,0:00:06.40,0:00:06.57,Caption,,0,0,0,,{\fad(35,35)}with {\1c&H005FC8F6&\b1}no{\1c&H00FFFFFF&} name,
+Dialogue: 10,0:00:06.57,0:00:06.91,Caption,,0,0,0,,{\fad(35,35)}with no {\1c&H005FC8F6&\b1}name,{\1c&H00FFFFFF&}
+Dialogue: 10,0:00:07.15,0:00:07.26,Caption,,0,0,0,,{\fad(35,35)}{\1c&H005FC8F6&\b1}no{\1c&H00FFFFFF&} entrance,
+Dialogue: 10,0:00:07.26,0:00:07.70,Caption,,0,0,0,,{\fad(35,35)}no {\1c&H005FC8F6&\b1}entrance,{\1c&H00FFFFFF&}
+Dialogue: 10,0:00:07.79,0:00:07.93,Caption,,0,0,0,,{\fad(35,35)}{\1c&H005FC8F6&\b1}and{\1c&H00FFFFFF&} one impossible warning.
+Dialogue: 10,0:00:07.93,0:00:08.08,Caption,,0,0,0,,{\fad(35,35)}and {\1c&H005FC8F6&\b1}one{\1c&H00FFFFFF&} impossible warning.
+Dialogue: 10,0:00:08.08,0:00:08.56,Caption,,0,0,0,,{\fad(35,35)}and one {\1c&H005FC8F6&\b1}impossible{\1c&H00FFFFFF&} warning.
+Dialogue: 10,0:00:08.56,0:00:08.89,Caption,,0,0,0,,{\fad(35,35)}and one impossible {\1c&H005FC8F6&\b1}warning.{\1c&H00FFFFFF&}
+Dialogue: 10,0:00:09.29,0:00:09.57,Caption,,0,0,0,,{\fad(35,35)}{\1c&H005FC8F6&\b1}When{\1c&H00FFFFFF&} archaeologists broke
+Dialogue: 10,0:00:09.57,0:00:10.53,Caption,,0,0,0,,{\fad(35,35)}When {\1c&H005FC8F6&\b1}archaeologists{\1c&H00FFFFFF&} broke
+Dialogue: 10,0:00:10.53,0:00:10.88,Caption,,0,0,0,,{\fad(35,35)}When archaeologists {\1c&H005FC8F6&\b1}broke{\1c&H00FFFFFF&}
+Dialogue: 10,0:00:10.88,0:00:11.07,Caption,,0,0,0,,{\fad(35,35)}{\1c&H005FC8F6&\b1}the{\1c&H00FFFFFF&} final stone,
+Dialogue: 10,0:00:11.07,0:00:11.39,Caption,,0,0,0,,{\fad(35,35)}the {\1c&H005FC8F6&\b1}final{\1c&H00FFFFFF&} stone,
+Dialogue: 10,0:00:11.39,0:00:11.71,Caption,,0,0,0,,{\fad(35,35)}the final {\1c&H005FC8F6&\b1}stone,{\1c&H00FFFFFF&}
+Dialogue: 10,0:00:12.10,0:00:12.36,Caption,,0,0,0,,{\fad(35,35)}{\1c&H005FC8F6&\b1}the{\1c&H00FFFFFF&} darkness inside
+Dialogue: 10,0:00:12.36,0:00:13.07,Caption,,0,0,0,,{\fad(35,35)}the {\1c&H005FC8F6&\b1}darkness{\1c&H00FFFFFF&} inside
+Dialogue: 10,0:00:13.07,0:00:13.60,Caption,,0,0,0,,{\fad(35,35)}the darkness {\1c&H005FC8F6&\b1}inside{\1c&H00FFFFFF&}
+Dialogue: 10,0:00:13.60,0:00:14.00,Caption,,0,0,0,,{\fad(35,35)}{\1c&H005FC8F6&\b1}seemed{\1c&H00FFFFFF&} to breathe.
+Dialogue: 10,0:00:14.00,0:00:14.13,Caption,,0,0,0,,{\fad(35,35)}seemed {\1c&H005FC8F6&\b1}to{\1c&H00FFFFFF&} breathe.
+Dialogue: 10,0:00:14.13,0:00:14.59,Caption,,0,0,0,,{\fad(35,35)}seemed to {\1c&H005FC8F6&\b1}breathe.{\1c&H00FFFFFF&}
+Dialogue: 6,0:00:00.00,0:00:02.25,HUD,,0,0,0,,{\fad(180,160)}ARCHIVE FILE  /  03
+Dialogue: 6,0:00:00.10,0:00:02.25,Title,,0,0,0,,{\fad(250,180)}BENEATH THE DESERT
+Dialogue: 6,0:00:05.80,0:00:06.85,HUD,,0,0,0,,{\fad(100,100)}CHAMBER RECORD  /  SEALED
+Dialogue: 6,0:00:06.85,0:00:07.70,HUDAlert,,0,0,0,,{\fad(80,70)}IDENTIFIER  /  NONE
+Dialogue: 6,0:00:07.70,0:00:08.55,HUDAlert,,0,0,0,,{\fad(60,70)}ENTRY POINT  /  NONE
+Dialogue: 6,0:00:08.55,0:00:09.30,HUDAlert,,0,0,0,,{\fad(45,45)\1c&H005A68FF&}WARNING  /  UNTRANSLATED
+Dialogue: 6,0:00:11.70,0:00:13.42,HUD,,0,0,0,,{\fad(130,100)}INTERIOR AIR  /  STATIC
+Dialogue: 6,0:00:13.42,0:00:15.00,HUDAlert,,0,0,0,,{\fad(80,300)}AIR MOVEMENT  /  DETECTED

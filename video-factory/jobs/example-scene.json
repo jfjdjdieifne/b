@@ -1,0 +1,20 @@
+{
+  "prompt": "A single uninterrupted cinematic tracking shot in real continuous motion. A child in a mustard-yellow raincoat naturally walks forward along a wet forest path toward a freestanding wooden door. The child takes two clear realistic steps, arms and shoulder bag move naturally, a golden wisp flies toward the handle, ferns sway, fog drifts, puddles ripple, and the door slowly begins to open with warm golden light spilling across the ground. Photorealistic dark-fantasy film, stable anatomy, no cuts.",
+  "negative_prompt": "static image, slideshow, zoom-only, frozen subject, sliding feet, morphing, identity change, extra limbs, deformed anatomy, warped door, flicker, jitter, text, logo, watermark",
+  "image_url": null,
+  "id": "example-scene",
+  "status": "queued",
+  "attempt": 0,
+  "max_attempts": 2,
+  "seed": 1987,
+  "created_at": "2026-08-17T00:00:00+00:00",
+  "updated_at": "2026-08-17T00:00:00+00:00",
+  "provider": null,
+  "provider_account": null,
+  "provider_job_id": null,
+  "output_path": null,
+  "error": null,
+  "metadata": {
+    "purpose": "first automated 5-second Kaggle test"
+  }
+}

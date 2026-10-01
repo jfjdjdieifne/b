@@ -1,0 +1,4 @@
+# Local controller only; these are not installed in the remote Colab VM.
+# 0.6.0 currently calls jupyter_kernel_client.KernelClient, removed in 1.0.x.
+google-colab-cli==0.6.0
+jupyter-kernel-client==0.15.0

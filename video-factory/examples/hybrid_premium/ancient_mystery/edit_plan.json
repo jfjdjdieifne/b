@@ -1,0 +1,194 @@
+{
+  "schema_version": 1,
+  "id": "ancient-mystery-15s-compact",
+  "title": "The Sealed Chamber — Hybrid Premium",
+  "duration": 15.0,
+  "width": 1080,
+  "height": 1920,
+  "fps": 30,
+  "captions": "captions.ass",
+  "narration": "narration_15.m4a",
+  "music": "music_sfx.m4a",
+  "quality": {
+    "visual_beats": [
+      10,
+      16
+    ],
+    "minimum_unique_motion_sources": 15,
+    "shot_duration_seconds": [
+      0.3,
+      4.0
+    ],
+    "true_motion_required": true,
+    "allow_still_zoom_as_motion": false,
+    "draft_only": true
+  },
+  "effects": [
+    {
+      "type": "flash",
+      "start": 9.3,
+      "end": 9.365,
+      "color": "white",
+      "opacity": 0.62
+    }
+  ],
+  "shots": [
+    {
+      "source": "masters/shot-01.mp4",
+      "in": 0,
+      "duration": 1.1,
+      "label": "visual beat 01",
+      "grade": "desert",
+      "source_class": "licensed_motion_master",
+      "license_ref": "dunes",
+      "crop_x": 292
+    },
+    {
+      "source": "masters/shot-02.mp4",
+      "in": 0,
+      "duration": 1.15,
+      "label": "visual beat 02",
+      "grade": "desert",
+      "source_class": "licensed_motion_master",
+      "license_ref": "dunes",
+      "crop_x": 584
+    },
+    {
+      "source": "masters/shot-03.mp4",
+      "in": 0,
+      "duration": 1.1,
+      "label": "visual beat 03",
+      "grade": "dig",
+      "source_class": "licensed_motion_master",
+      "license_ref": "excavation_wide",
+      "crop_x": 0,
+      "reframe_pixels": 10
+    },
+    {
+      "source": "masters/shot-04.mp4",
+      "in": 0,
+      "duration": 0.95,
+      "label": "visual beat 04",
+      "grade": "dig",
+      "source_class": "licensed_motion_master",
+      "license_ref": "excavation_wide",
+      "crop_x": 656,
+      "reframe_pixels": -10
+    },
+    {
+      "source": "masters/shot-05.mp4",
+      "in": 0,
+      "duration": 0.9,
+      "label": "visual beat 05",
+      "grade": "dig",
+      "source_class": "licensed_motion_master",
+      "license_ref": "excavation_wide",
+      "crop_x": 1312,
+      "reframe_pixels": -12
+    },
+    {
+      "source": "masters/shot-06.mp4",
+      "in": 0,
+      "duration": 0.7,
+      "label": "visual beat 06",
+      "grade": "dig",
+      "source_class": "licensed_motion_master",
+      "license_ref": "excavation_detail",
+      "crop_x": 292,
+      "reframe_pixels": -10
+    },
+    {
+      "source": "masters/shot-07.mp4",
+      "in": 0,
+      "duration": 0.95,
+      "label": "visual beat 07",
+      "grade": "dig",
+      "source_class": "licensed_motion_master",
+      "license_ref": "excavation_wide",
+      "crop_x": 656,
+      "reframe_pixels": 10
+    },
+    {
+      "source": "masters/shot-08.mp4",
+      "in": 0,
+      "duration": 0.85,
+      "label": "visual beat 08",
+      "grade": "inscription",
+      "source_class": "licensed_motion_master",
+      "license_ref": "inscriptions_vertical"
+    },
+    {
+      "source": "masters/shot-09.mp4",
+      "in": 0,
+      "duration": 0.85,
+      "label": "visual beat 09",
+      "grade": "inscription",
+      "source_class": "licensed_motion_master",
+      "license_ref": "inscriptions_vertical"
+    },
+    {
+      "source": "masters/shot-10.mp4",
+      "in": 0,
+      "duration": 0.75,
+      "label": "visual beat 10",
+      "grade": "inscription",
+      "source_class": "licensed_motion_master",
+      "license_ref": "inscriptions_vertical"
+    },
+    {
+      "source": "masters/shot-11.mp4",
+      "in": 0,
+      "duration": 0.8,
+      "label": "visual beat 11",
+      "grade": "cave",
+      "source_class": "licensed_motion_master",
+      "license_ref": "cave_train_vertical",
+      "zoom_crop": 0.86
+    },
+    {
+      "source": "masters/shot-12.mp4",
+      "in": 0,
+      "duration": 1.05,
+      "label": "visual beat 12",
+      "grade": "cave",
+      "source_class": "licensed_motion_master",
+      "license_ref": "cave_walk_vertical",
+      "zoom_crop": 0.86
+    },
+    {
+      "source": "masters/shot-13.mp4",
+      "in": 0,
+      "duration": 1.05,
+      "label": "visual beat 13",
+      "grade": "cave",
+      "source_class": "licensed_motion_master",
+      "license_ref": "cave_train_vertical",
+      "zoom_crop": 0.86
+    },
+    {
+      "source": "masters/shot-14.mp4",
+      "in": 0,
+      "duration": 1.25,
+      "label": "visual beat 14",
+      "grade": "cave",
+      "source_class": "licensed_motion_master",
+      "license_ref": "cave_walk_vertical",
+      "zoom_crop": 0.86
+    },
+    {
+      "source": "masters/shot-15.mp4",
+      "in": 0,
+      "duration": 1.55,
+      "label": "visual beat 15",
+      "grade": "breath",
+      "source_class": "licensed_motion_master",
+      "license_ref": "cave_train_vertical",
+      "zoom_crop": 0.86
+    }
+  ],
+  "metadata": {
+    "publishing_mode": "draft_only",
+    "compact_self_contained": true,
+    "rights_file": "CREDITS.md"
+  }
+}

@@ -1,0 +1,84 @@
+project:
+  name: video-factory
+  timezone: Asia/Damascus
+scheduler:
+  target_videos_per_day: 1
+  poll_minutes: 15
+huggingface_zerogpu:
+  # Live-tested public Gradio API. HF_TOKEN is optional, but a free account raises
+  # the renewable daily allowance from 2 GPU minutes anonymous to 5 GPU minutes.
+  space_id: Upsampler/wan-2-2-5b-video
+  model: Wan2.2-TI2V-5B
+  width: 480
+  height: 832
+  smoke_duration: 1
+  smoke_steps: 2
+  timeout_seconds: 900
+free_ai:
+  # Experimental no-card API candidate. Live smoke-test before enabling in the router.
+  base_url: https://api.free.ai
+  model: ""  # empty = self-hosted CogVideoX default, not a premium/* model
+  smoke_duration: 2
+  aspect_ratio: "9:16"
+  timeout_seconds: 900
+kaggle:
+  kernel_slug: wan-video-worker
+  accelerator: NvidiaTeslaT4
+  internet: true
+  timeout_seconds: 43200
+  # Skip an account temporarily after an authentication/quota/submission failure.
+  account_cooldown_minutes: 60
+  # Avoid duplicating a possibly-running render after one transient status API error.
+  status_error_retries: 3
+render:
+  model_type: ti2v_2_2_fastwan
+  width: 480
+  height: 832
+  frames: 121
+  fps: 24
+  steps: 3
+  guidance_scale: 1.0
+  flow_shift: 3
+  profile: 5
+  attention: sdpa
+  seed: 1987
+  max_attempts: 2
+visual_direction:
+  style: hybrid_premium
+  true_motion_required: true
+  allow_still_zoom_as_motion: false
+  fixed_shot_duration: false
+  shot_duration_seconds: [0.3, 4.0]
+  target_30s:
+    visual_beats: [20, 30]
+    unique_motion_sources: [12, 18]
+    wan_hero_masters: [4, 6]
+  target_60s:
+    visual_beats: [35, 55]
+    unique_motion_sources: [20, 30]
+    wan_hero_masters: [6, 10]
+  spec: docs/HYBRID_PREMIUM_VISUAL_SPEC.md
+hybrid_premium:
+  renderer: video_factory.hybrid_premium.renderer
+  qa: video_factory.hybrid_premium.qa
+  master:
+    width: 1080
+    height: 1920
+    fps: 30
+    video_codec: h264
+    audio_codec: aac
+    audio_channels: stereo
+    integrated_loudness_lufs: -14
+    true_peak_dbfs: -1.5
+  gates:
+    maximum_freeze_seconds: 0.5
+    reject_full_black_frames: true
+    reject_watermarks: true
+    require_rights_metadata: true
+    require_manual_continuity_review: true
+  reference_plan: examples/hybrid_premium/ancient_mystery/edit_plan.json
+  reference_preview: examples/hybrid_premium/ancient_mystery/sample_preview.mp4
+publishing:
+  mode: draft_only
+  enabled: false
+  privacy_status: private

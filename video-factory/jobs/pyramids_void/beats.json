@@ -1,0 +1,113 @@
+{
+  "id": "pyramids-void-30s",
+  "title": "The Sealed Chamber — Arena Only",
+  "vo_dir": "vo",
+  "keys_dir": "keys",
+  "music": "../../examples/hybrid_premium/ancient_mystery/music_sfx.m4a",
+  "pacing": {
+    "lead": 0.15,
+    "gap": 0.22,
+    "tail": 0.6
+  },
+  "split_over": 3.55,
+  "min_pause": 0.2,
+  "beats": [
+    {
+      "sentence": 0,
+      "a": "keys/s01_a.jpg",
+      "b": "keys/s01_b.jpg",
+      "grade": "desert_lift",
+      "caption": "A SEALED CHAMBER",
+      "move": "in",
+      "amount": 0.2,
+      "a2": "keys/s01_b.jpg",
+      "b2": null,
+      "move2": "creep",
+      "amount2": 0.16
+    },
+    {
+      "sentence": 1,
+      "a": "keys/s03_a.jpg",
+      "grade": "lab",
+      "caption": "2017: COSMIC RAYS",
+      "move": "creep",
+      "amount": 0.3,
+      "b": "keys/s03_b.jpg"
+    },
+    {
+      "sentence": 2,
+      "a": "keys/s04_a.jpg",
+      "b": "keys/s04_b.jpg",
+      "grade": "neutral",
+      "caption": "THE SIZE OF A PASSENGER JET",
+      "move": "lateral",
+      "amount": 0.3
+    },
+    {
+      "sentence": 3,
+      "a": "keys/s02_a.jpg",
+      "b": "keys/s02_b.jpg",
+      "grade": "dig",
+      "caption": "HIDDEN FOR 4,500 YEARS",
+      "move": "in_fast",
+      "amount": 0.3
+    },
+    {
+      "sentence": 4,
+      "a": "keys/s05_a.jpg",
+      "b": "keys/s05_b.jpg",
+      "grade": "bright_cave",
+      "caption": "LOOK AGAIN",
+      "caption_b": "THE ENTRANCE ISN'T WHERE YOU THINK",
+      "move": "tilt_up",
+      "amount": 0.28
+    },
+    {
+      "sentence": 5,
+      "a": "keys/s08_a.jpg",
+      "b": "keys/s08_b.jpg",
+      "grade": "bright_cave",
+      "caption": "A CORRIDOR DROPS BELOW",
+      "move": "out",
+      "amount": 0.3
+    },
+    {
+      "sentence": 6,
+      "a": "keys/s09_a.jpg",
+      "b": "keys/s09_b.jpg",
+      "grade": "bright_cave",
+      "caption": "AND THE WRITING GETS OLDER",
+      "move": "in_fast",
+      "amount": 0.3
+    },
+    {
+      "sentence": 7,
+      "a": "keys/s10_a.jpg",
+      "b": "keys/s10_b.jpg",
+      "grade": "soft_inscription",
+      "caption": "NOT A TOMB. A MESSAGE.",
+      "move": "track",
+      "amount": 0.3
+    }
+  ],
+  "outro": {
+    "key": "keys/s01_a.jpg",
+    "duration": 3.4,
+    "move": "out",
+    "amount": 0.3,
+    "grade": "desert_lift",
+    "caption": "THE CHAMBER IS STILL SEALED",
+    "air": {
+      "haze": 0.12,
+      "motes": 0.06,
+      "breath": 0.02
+    }
+  },
+  "transition": 0.55,
+  "air": {
+    "haze": 0.1,
+    "motes": 0.05,
+    "breath": 0.016
+  },
+  "fade_out": 0.8
+}

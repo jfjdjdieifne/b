@@ -1,0 +1,67 @@
+name: Video Factory Orchestrator
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/15 * * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: video-factory-orchestrator
+  cancel-in-progress: false
+
+jobs:
+  orchestrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+      - name: Run one orchestration tick
+        env:
+          # Recommended multi-account slots. Configure complete username/token pairs.
+          KAGGLE_USERNAME_1: ${{ secrets.KAGGLE_USERNAME_1 }}
+          KAGGLE_API_TOKEN_1: ${{ secrets.KAGGLE_API_TOKEN_1 }}
+          KAGGLE_USERNAME_2: ${{ secrets.KAGGLE_USERNAME_2 }}
+          KAGGLE_API_TOKEN_2: ${{ secrets.KAGGLE_API_TOKEN_2 }}
+          KAGGLE_USERNAME_3: ${{ secrets.KAGGLE_USERNAME_3 }}
+          KAGGLE_API_TOKEN_3: ${{ secrets.KAGGLE_API_TOKEN_3 }}
+          KAGGLE_USERNAME_4: ${{ secrets.KAGGLE_USERNAME_4 }}
+          KAGGLE_API_TOKEN_4: ${{ secrets.KAGGLE_API_TOKEN_4 }}
+          KAGGLE_USERNAME_5: ${{ secrets.KAGGLE_USERNAME_5 }}
+          KAGGLE_API_TOKEN_5: ${{ secrets.KAGGLE_API_TOKEN_5 }}
+          KAGGLE_USERNAME_6: ${{ secrets.KAGGLE_USERNAME_6 }}
+          KAGGLE_API_TOKEN_6: ${{ secrets.KAGGLE_API_TOKEN_6 }}
+          KAGGLE_USERNAME_7: ${{ secrets.KAGGLE_USERNAME_7 }}
+          KAGGLE_API_TOKEN_7: ${{ secrets.KAGGLE_API_TOKEN_7 }}
+          KAGGLE_USERNAME_8: ${{ secrets.KAGGLE_USERNAME_8 }}
+          KAGGLE_API_TOKEN_8: ${{ secrets.KAGGLE_API_TOKEN_8 }}
+          KAGGLE_USERNAME_9: ${{ secrets.KAGGLE_USERNAME_9 }}
+          KAGGLE_API_TOKEN_9: ${{ secrets.KAGGLE_API_TOKEN_9 }}
+          KAGGLE_USERNAME_10: ${{ secrets.KAGGLE_USERNAME_10 }}
+          KAGGLE_API_TOKEN_10: ${{ secrets.KAGGLE_API_TOKEN_10 }}
+          # Optional unlimited-size JSON pool; numbered slots take precedence when set.
+          KAGGLE_ACCOUNTS_JSON: ${{ secrets.KAGGLE_ACCOUNTS_JSON }}
+          # Backward-compatible original single-account secrets.
+          KAGGLE_API_TOKEN: ${{ secrets.KAGGLE_API_TOKEN }}
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KERNEL_SLUG: wan-video-worker
+        run: python -m video_factory.orchestrator
+      - name: Persist job and account-pool state
+        if: ${{ always() }}
+        run: |
+          git config user.name "video-factory-bot"
+          git config user.email "video-factory-bot@users.noreply.github.com"
+          git add jobs state
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: update video job state"
+            git pull --rebase
+            git push
+          fi

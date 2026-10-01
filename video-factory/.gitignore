@@ -1,0 +1,23 @@
+.env
+.env.*
+!.env.example
+*.token
+kaggle.json
+access_token
+secrets.json
+outputs/*
+!outputs/.gitkeep
+.work/
+__pycache__/
+*.pyc
+
+# Local secret store and runtime logs
+.arena/
+
+# Arena Studio runtime (rebuildable render intermediates; final media stays in outputs/)
+jobs/*/build/
+jobs/*/audio/
+*.mp4
+!examples/**/*.mp4
+!jobs/*/vo/*.mp3
+!.gitkeep

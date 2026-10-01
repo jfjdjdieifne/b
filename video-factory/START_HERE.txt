@@ -1,0 +1,12 @@
+VIDEO FACTORY — COMPLETE SELF-CONTAINED PROJECT
+
+1) Extract this ZIP.
+2) Open a terminal inside video-factory.
+3) Install: python -m pip install -r requirements.txt
+4) Render Full HD:
+   python scripts/render_hybrid_premium.py --plan examples/hybrid_premium/ancient_mystery/edit_plan.json --output outputs/final-fullhd.mp4
+5) Run QA:
+   python scripts/qa_hybrid_premium.py --plan examples/hybrid_premium/ancient_mystery/edit_plan.json --video outputs/final-fullhd.mp4
+
+Publishing is locked to draft_only. No API keys are included.
+The included sample_preview.mp4 is only a compact preview; the command above creates 1080x1920.

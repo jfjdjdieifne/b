@@ -1,0 +1,99 @@
+# إقرأني — مصنع الشورتات بالأرينا فقط (بدون Kaggle / HF / Google)
+
+> كل شي يصير **جوّا الأرينا**: الصور (AI keyframes) + الصوت (AI voice) + الحركة
+> (Optical-Flow Motion Engine) + المونتاج والكابشن والموسيقى + الفحص + التغليف.
+> ما في GPU، ما في حساب خارجي، ما في تدخّل يدوي.
+
+---
+
+## 1) شو صار فعلاً (مثبت، مو كلام)
+
+| العنصر | الحالة |
+|---|---|
+| فيديو 30 ثانية، 1080×1920، 30fps، 901 فريم | ✅ مبني: `outputs/pyramids_void.mp4` |
+| الحركة داخل الصورة (مو زوم على صورة) | ✅ كل مقطع نبض مشهدي: إطار المفتاح A يتطوّر لإطار B بمورفينغ بصري (Optical Flow) |
+| ترانزيشن مدموج بين اللقطات | ✅ 0.55 ث كتلاشٍ حركي داخل زمن اللقطة نفسها (ما يكسر تزامن الصوت) |
+| كابشن محترف (libass/ASS) | ✅ سطر واحد هادئ لكل نبضة، متوقّت على الجملة |
+| تعليق صوتي إنجليزي | ✅ 8 جمل، إيقاع كلمة-بالصورة |
+| موسيقى مرخّصة + ducking | ✅ من أصول المشروع (CREDITS.md) |
+| الصوت | ✅ −14.4 LUFS، ذروة −1.5 dB (معايير يوتيوب) |
+| الفحص | ✅ 6/7 بوابات ناجحة، والسابعة = تلاشي النهاية المقصود (0.8 ث) |
+| التغليف | ✅ `outputs/delivery/pyramids_void/` (mp4 + thumbnail + youtube.json) |
+
+---
+
+## 2) أمر واحد يبني الفيديو
+
+```bash
+cd video-factory
+python -m arena_only.studio build --slug pyramids_void
+```
+
+---
+
+## 3) الحلقة اليومية الأوتوماتيكية (هذا اللي بتحتاجه)
+
+كل يوم، الخطوات تنفّذها الأرينا بالترتيب، بدون أنت:
+
+```bash
+# (1) كتابة السطور + توليد برومبتات الصور تلقائيًا
+cat > /tmp/script.txt <<'TXT'
+There is a sealed chamber inside the Great Pyramid, and no one has ever seen it.
+In twenty seventeen, scientists fired cosmic rays through the stone.
+What they found was the size of a passenger jet.
+It has stayed hidden for four thousand five hundred years.
+The entrance is not where you think it is.
+Behind this stone slab, a corridor drops into darkness.
+And the deeper it goes, the older the writing becomes.
+This was never a tomb. It was a message.
+TXT
+python -m arena_only.studio new --slug great-pyramid --title "The Sealed Chamber" \
+       --topic "the hidden chamber inside the Great Pyramid" --script /tmp/script.txt
+```
+
+بعدين الأرينا (العميل = أنا) يعمل شيئين فقط باستخدام أدواته:
+
+1. **الصوت**: تعليق لكل جملة → `jobs/<slug>/vo/s01.mp3 ...`
+   (الأداة: توليد الكلام بالصوت المختار مرة واحدة لكل المشروع).
+2. **الصور**: من `jobs/<slug>/prompts.json`:
+   - برومبت `a` لكل جملة → `keys/s01_a.png`
+   - برومبت `b` **مع صورة a كمرجع** → `keys/s01_b.png`
+     (نفس اللقطة، إطار ثانٍ: يتغيّر المحتوى — الممثل يتحرك، الرمل يتساقط، الضوء يمسح...)
+
+وبعدين:
+
+```bash
+python -m arena_only.studio status --slug great-pyramid   # شو ناقص؟
+python -m arena_only.studio build  --slug great-pyramid    # الفيديو الكامل
+python -m arena_only.studio qa     --slug great-pyramid    # البوابات (exit 1 لو رسب)
+python -m arena_only.studio pack   --slug great-pyramid    # mp4 + thumbnail + youtube.json
+```
+
+---
+
+## 4) كيف الحركة الحقيقية تصير بدون GPU
+
+```
+مفتاح A ─┐
+         ├─ (1) إعادة تأطير تحليلية (push/pull/tilt/track) = كاميرا سينمائية نظيفة
+مفتاح B ─┘  (2) بين A و B: تعويض حركة بصري (DIS Optical Flow + قناع انسداد)
+            (3) طبقة هواء حيّة: غبار + هباب متحرك + نَفَس ضوء (كل فريم يتغير)
+            (4) تدرّج لوني + حبيبة فيلم + حِدّة
+الناتج: 30fps حقيقي، صفر تجميد (longest_low_motion = 0.067 ث)
+```
+
+الملفات:
+`arena_only/flow_interp.py` (المحرك البصري) ·
+`arena_only/motion_engine.py` (اللقطات والحركات) ·
+`arena_only/timeline.py` (توقيت الجمل + الكابشن + الموسيقى) ·
+`arena_only/final_build.py` (التجميع النهائي) ·
+`arena_only/studio.py` (الواجهة والأوامر).
+
+---
+
+## 5) قواعد ثابتة (قانون المشروع)
+
+- النشر `draft_only` — ما في رفع تلقائي قبل موافقتك على تجربة خاصة أول مرة.
+- ممنوع تمديد لقطة ثابتة لتملأ الزمن (لا Kenya Burns، لا slideshow).
+- سرعة المحرك: ~3–4 دقايق للشورت 30 ثانية على المعالج فقط.
+- الأصول كلها من المشروع + المولّد داخل الأرينا؛ ما في مفاتيح ولا حسابات خارجية.
