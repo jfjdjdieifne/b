@@ -1,0 +1,30 @@
+# secrets — never commit
+.netrc
+.git-credentials
+*.token
+
+# owner data — never commit (OWNER PC ONLY boundary)
+uploads/
+
+# bundles — GitHub Releases only, by explicit owner order
+*.zip
+*.7z
+*.rar
+
+# caches / build artifacts
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+*.egg-info/
+build/
+dist/
+
+# local scratch / tooling artifacts
+memcheck/
+perf_lab/
+smoke/
+.build_*.sha
+.closure_*.sha
+.tools_gate_*.txt
+.build_mutations.json

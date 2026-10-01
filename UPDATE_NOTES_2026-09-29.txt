@@ -1,0 +1,95 @@
+==============================================================
+UPDATE NOTES - BTC MAY 2026 FIELD PACKAGE (2026-09-29)
+Package: 34_BTC_MAY2026_FIELD_RUNNER_PACKAGE_EXACT_PERF_V2_COMPLETE
+Arabic owner notes (UTF-8) - status: PENDING_OWNER_RE_AUDIT
+==============================================================
+
+WHAT IS NEW vs PACKAGE 30 (the previous field package)
+-------------------------------------------------------
+1) EXACT PERFORMANCE V2 engine patches (deliverable 32):
+   - src/trading_system/core/causal_percentile.py   (PATCH-1: hybrid + fast
+     path, bitwise-identical floats via uint64 view + hex proof)
+   - src/trading_system/zones/fvg.py                (PATCH-2a+2b: counters +
+     per-entity lifecycle after the loop)
+   - src/trading_system/decision/narrative.py       (PATCH-3: bound_columns +
+     _value_prebound)
+2) Test-suite acceleration (deliverable 33) - the TEST RUN ITSELF is faster
+   with ZERO check removed:
+   - src/trading_system/research/hashing.py         (PATCH-4: column-wise
+     canonical payload + dtype fast paths; byte-identical payloads/hashes)
+   - src/trading_system/research/manifest_identity.py (PATCH-5: column-wise
+     manifest walk; identical decisions AND error messages)
+3) tests/_patch_reference_src/ now holds 5 sha256-pinned pre-patch copies
+   (causal_percentile_pre, fvg_pre, narrative_pre, hashing_pre,
+   manifest_identity_pre) used by the differential old==new batteries.
+4) field_runner/runner_tests/test_runner_guards.py manifest gate upgraded to
+   a STRICTER seal (see below).
+
+EXPECTED TEST TIMES (owner PC was heading to 3+ hours for the full suite)
+------------------------------------------------------------------------
+- Full trading_project suite: sandbox 282.5s -> ~119-136s (about 2.3x).
+  Owner PC estimate: about 20-35 minutes instead of 3+ hours.
+- The heavy files dropped hard: trajectory_stage4b2 62s -> ~12s,
+  adaptive_confluence 49s -> ~24s, research_dataset_builder 35s -> ~15s,
+  trajectory_stage3 33s -> ~15s (sandbox numbers; your machine scales
+  them uniformly).
+- field_runner runner_tests: 31/31 green.
+
+MANIFEST STATUS (fail-closed, nothing disabled)
+-----------------------------------------------
+- trading_project/MANIFEST.sha256 is NOT modified:
+  sha256 = 7796a73fc30fc311902d7ba8e033eb1699a73c5db10e824d02653fbdd1681587
+  (183 lines).
+- 173 entries match the manifest exactly. 10 entries differ ON PURPOSE
+  (5 patched src + 5 patched tests listed above and in reports 32/33).
+- The runner guard test_closed_project_manifest_untouched now pins BOTH:
+  (a) the untouched MANIFEST digest above, and (b) the exact post-patch
+  sha256 of each of the 10 files. Any OTHER drift = red. This is stricter
+  than the old all-match gate; nothing is bypassed or allowed.
+
+THE 10 DOCUMENTED FILES (sha256 AFTER the patches)
+--------------------------------------------------
+1543794f173e1552435d2d37fd53fa9f7b67ba3c2dfb7c6ddc001f971f0f8654  src/trading_system/core/causal_percentile.py
+1df18e553557132788024168ed8b384c338476271cf08c436c23bc01d31dcd4b  src/trading_system/zones/fvg.py
+407c4d2f8be00cf66e22232b0da3d88de80a8068dad066aa7ed6a902b0dd24f9  src/trading_system/decision/narrative.py
+f2a64c8e3e098f6149c5d01039122b10a8929e44b430cbd7edf40a10317d5c7d  src/trading_system/research/hashing.py
+4c88fc44638af9ddd64a6259c86dc3b80fea927097363fe3e87141d35d92414b  src/trading_system/research/manifest_identity.py
+55f2be1bee0b13d60a5e793594e40ab934fa3688764ba1c1f95d237b3e11f228  tests/test_causal_percentile.py
+471702f7293923748008ce1948b3ee7a1eced7595b16be408f2f6fe22672b05a  tests/test_fvg.py
+c9c3000031d046c508d0c82371f6e64839ff8274a6acb139d1e42350afbb0740  tests/test_narrative.py
+d9eaf0513c0f58f40cb190a352962ba30058c98818b1a0d88c3df7d53a761e67  tests/test_research_hashing.py
+15d1a7271c325f38e230bc67de40b0edf3dc3df5bb8e0edf039c97a455485d49  tests/test_research_manifest_identity.py
+
+PRECISION PROOFS (why these changes are safe)
+--------------------------------------------
+- Every patch is differential old==new against sha256-pinned pre-patch
+  copies: identical outputs bit-for-bit (uint64 float views + hex), and for
+  the research patches identical canonical payloads, identical sha256
+  identities, identical accept/reject decisions, identical error messages.
+- Battery totals: fvg bitwise 30,888/30,888; causality gate + 4 mutation
+  proofs; hashing adversarial battery (21 cases incl. signed zeros, NaN,
+  nullable dtypes, enums, timestamps); manifest decision/message battery.
+- No test deleted, no assertion weakened, no fixture disabled.
+
+HOW TO RUN (unchanged - one command)
+------------------------------------
+1. Extract this package (keep folder layout).
+2. Put your data in .\data\ (minute-facts CSV + sidecar JSON; raw aggTrades
+   optional in FAST mode).
+3. Windows: run_btc_may_2026.bat
+   The field report goes to outputs/btc_may_2026_reality/.
+
+Developer-side gates (optional, not part of the one command):
+  python -m pytest field_runner\runner_tests -q     (31 tests)
+  python -m pytest trading_project\tests -q         (full suite)
+
+RE-AUDIT
+--------
+Everything here is PATCHED - PENDING_OWNER_RE_AUDIT. Full details and
+reproduction commands: reports/32_*.md and reports/33_*.md (bench scripts
+and result logs are under reports/perf_lab/). Closure is your decision in
+the independent audit chat only.
+
+DO NOT: --allow-hash-mismatch as a fix, disabling hash guards, re-converting
+the 1.8GB raw file, downloading any replacement data, or relaxing any gate.
+TIE_ORDER_CONTRACT stays NOT_PROVEN. PROXY and ACTUAL are never summed.
