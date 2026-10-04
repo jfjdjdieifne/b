@@ -1,0 +1,9 @@
+{
+  "account_equity": 10000.0,
+  "capital_risk_fraction": 0.01,
+  "min_qualification_rr": 3.0,
+  "runtime_seconds": 3223.79,
+  "total_bars_analyzed": 44640,
+  "total_lifecycle_events": 11692,
+  "total_qualifying_recommendations": 4451
+}
