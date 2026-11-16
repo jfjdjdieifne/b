@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>العقل الخارق للتريكس الفردي — Grandmaster Trix AI</title>
+  <style>
+    :root {
+      --bg: #081210;
+      --panel: #0f1f1c;
+      --panel-2: #142925;
+      --border: #204039;
+      --felt-1: #0e4b35;
+      --felt-2: #083022;
+      --gold: #f5c542;
+      --gold-dim: #b68d21;
+      --emerald: #22c55e;
+      --danger: #ef4444;
+      --text: #ecfdf5;
+      --muted: #93b8ae;
+      --card-bg: #fffdf8;
+      --red: #dc2626;
+      --ink: #0f172a;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Tahoma, Arial, sans-serif;
+      background: radial-gradient(circle at top, #102621 0%, var(--bg) 70%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 20px;
+      background: rgba(11, 24, 21, 0.92);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      backdrop-filter: blur(8px);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand-badge {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--gold), #d97706);
+      color: #111;
+      font-weight: 900;
+      font-size: 20px;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 0 18px rgba(245, 197, 66, 0.35);
+    }
+    .brand h1 {
+      margin: 0;
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: -0.2px;
+    }
+    .brand small {
+      display: block;
+      color: var(--muted);
+      font-size: 11.5px;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+    select, button {
+      font-family: inherit;
+      border-radius: 9px;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--text);
+      padding: 7px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.16s ease;
+    }
+    button:hover:not(:disabled) {
+      border-color: var(--gold);
+      transform: translateY(-1px);
+    }
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    .btn-gold {
+      background: linear-gradient(135deg, #f5c542, #d97706);
+      color: #111;
+      border-color: #f5c542;
+      font-weight: 800;
+    }
+    .btn-emerald {
+      background: linear-gradient(135deg, #22c55e, #15803d);
+      color: #fff;
+      border-color: #22c55e;
+      font-weight: 700;
+    }
+    .btn-danger {
+      background: linear-gradient(135deg, #ef4444, #991b1b);
+      color: #fff;
+      border-color: #ef4444;
+      font-weight: 700;
+    }
+
+    /* Main Grid */
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 370px;
+      gap: 16px;
+      padding: 16px 20px 28px;
+      max-width: 1460px;
+      margin: 0 auto;
+    }
+    @media (max-width: 1080px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+
+    /* Table Arena */
+    .arena {
+      background: radial-gradient(ellipse at center, var(--felt-1) 0%, var(--felt-2) 78%);
+      border: 3px solid #2b4f44;
+      border-radius: 22px;
+      padding: 16px;
+      box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.55), 0 18px 40px rgba(0, 0, 0, 0.45);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      min-height: 660px;
+      position: relative;
+    }
+
+    /* Top Info Ribbon */
+    .ribbon {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: rgba(6, 18, 14, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      padding: 10px 14px;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12.5px;
+      font-weight: 600;
+    }
+    .pill.gold {
+      background: rgba(245, 197, 66, 0.18);
+      color: var(--gold);
+      border: 1px solid rgba(245, 197, 66, 0.4);
+    }
+
+    /* Seat grid */
+    .table-grid {
+      flex: 1;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      grid-template-columns: 150px 1fr 150px;
+      gap: 10px;
+      align-items: center;
+      min-height: 330px;
+    }
+    @media (max-width: 720px) {
+      .table-grid {
+        grid-template-columns: 95px 1fr 95px;
+      }
+    }
+
+    .seat-box {
+      background: rgba(5, 17, 13, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      padding: 8px 11px;
+      text-align: center;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .seat-box.active-turn {
+      border-color: var(--gold);
+      box-shadow: 0 0 18px rgba(245, 197, 66, 0.4);
+    }
+    .seat-box .name {
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+    .seat-box .scores {
+      margin-top: 4px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .seat-box .scores strong {
+      color: var(--text);
+      font-size: 14px;
+    }
+    .seat-box .cards-left {
+      margin-top: 3px;
+      font-size: 11px;
+      color: #a7f3d0;
+    }
+    .seat-north { grid-row: 1; grid-column: 2; justify-self: center; min-width: 210px; }
+    .seat-east  { grid-row: 2; grid-column: 1; }
+    .seat-west  { grid-row: 2; grid-column: 3; }
+    .seat-south-info { grid-row: 3; grid-column: 2; justify-self: center; min-width: 240px; }
+
+    /* Center Table */
+    .center-board {
+      grid-row: 2;
+      grid-column: 2;
+      min-height: 225px;
+      background: rgba(4, 22, 16, 0.42);
+      border: 1px dashed rgba(255, 255, 255, 0.18);
+      border-radius: 18px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      position: relative;
+    }
+
+    /* Trick diamond layout */
+    .trick-diamond {
+      display: grid;
+      grid-template-areas:
+        ". north ."
+        "east center west"
+        ". south .";
+      grid-template-columns: 74px 74px 74px;
+      grid-template-rows: 92px 24px 92px;
+      align-items: center;
+      justify-items: center;
+      gap: 4px;
+    }
+    .slot-2 { grid-area: north; }
+    .slot-1 { grid-area: east; }
+    .slot-3 { grid-area: west; }
+    .slot-0 { grid-area: south; }
+
+    /* Playing Card */
+    .card {
+      width: 62px;
+      height: 88px;
+      border-radius: 9px;
+      background: var(--card-bg);
+      color: var(--ink);
+      border: 1.5px solid #cbd5e1;
+      box-shadow: 0 5px 14px rgba(0, 0, 0, 0.45);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 5px 6px;
+      user-select: none;
+      position: relative;
+      transition: transform 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease;
+    }
+    .card.red { color: var(--red); }
+    .card .corner {
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1;
+      text-align: left;
+      direction: ltr;
+    }
+    .card .pip {
+      font-size: 25px;
+      text-align: center;
+      line-height: 1;
+    }
+    .card.playable {
+      cursor: pointer;
+      border-color: #94a3b8;
+    }
+    .card.playable:hover {
+      transform: translateY(-14px) scale(1.04);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.55);
+      z-index: 5;
+    }
+    .card.dimmed {
+      opacity: 0.48;
+      filter: grayscale(0.25);
+      cursor: not-allowed;
+    }
+    .card.recommended {
+      border: 3px solid var(--gold);
+      box-shadow: 0 0 22px rgba(245, 197, 66, 0.85);
+      transform: translateY(-10px);
+      z-index: 4;
+    }
+    .card.recommended::after {
+      content: "★ الأمثل";
+      position: absolute;
+      top: -19px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--gold);
+      color: #111;
+      font-size: 10px;
+      font-weight: 900;
+      padding: 1px 6px;
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+
+    /* Hand Area */
+    .hand-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px;
+      padding: 14px 8px 6px;
+      background: rgba(6, 18, 14, 0.55);
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      min-height: 112px;
+    }
+
+    /* Trix Layout Tracks */
+    .trix-tracks {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .trix-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(0, 0, 0, 0.25);
+      padding: 6px 10px;
+      border-radius: 10px;
+      overflow-x: auto;
+    }
+    .trix-suit-tag {
+      min-width: 30px;
+      font-size: 19px;
+      font-weight: 900;
+      text-align: center;
+    }
+    .trix-cells {
+      display: flex;
+      gap: 3px;
+      direction: ltr;
+      flex: 1;
+      justify-content: center;
+    }
+    .trix-cell {
+      width: 26px;
+      height: 30px;
+      border-radius: 5px;
+      font-size: 11.5px;
+      font-weight: 800;
+      display: grid;
+      place-items: center;
+      background: rgba(255, 255, 255, 0.06);
+      color: rgba(255, 255, 255, 0.22);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .trix-cell.open {
+      background: var(--card-bg);
+      color: var(--ink);
+      border-color: #cbd5e1;
+    }
+    .trix-cell.open.red { color: var(--red); }
+    .trix-cell.anchor {
+      border-color: var(--gold);
+    }
+
+    /* Phase Modal Box inside Center */
+    .phase-card {
+      background: rgba(9, 25, 20, 0.94);
+      border: 1.5px solid var(--gold-dim);
+      border-radius: 16px;
+      padding: 16px 18px;
+      text-align: center;
+      max-width: 460px;
+      width: 100%;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.55);
+    }
+    .phase-card h3 {
+      margin: 0 0 10px;
+      color: var(--gold);
+      font-size: 16px;
+    }
+    .btn-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 10px;
+    }
+
+    /* Sidebar Brain Panel */
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+    }
+    .panel h2 {
+      margin: 0 0 10px;
+      font-size: 14.5px;
+      color: var(--gold);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    th, td {
+      padding: 6px 5px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      text-align: center;
+    }
+    th {
+      color: var(--muted);
+      font-weight: 600;
+    }
+    tr.best-row {
+      background: rgba(34, 197, 94, 0.14);
+      font-weight: 700;
+    }
+
+    .explain-box {
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      border-radius: 11px;
+      padding: 9px 11px;
+      font-size: 12.5px;
+      line-height: 1.55;
+      margin-bottom: 10px;
+    }
+
+    .belief-chip {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      padding: 3px 8px;
+      margin: 2px;
+      font-size: 11.5px;
+    }
+
+    .feed {
+      max-height: 155px;
+      overflow-y: auto;
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .feed div {
+      padding: 3px 6px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .tab-btn {
+      flex: 1;
+      font-size: 12px;
+      padding: 6px 8px;
+    }
+    .tab-btn.active {
+      background: var(--gold);
+      color: #111;
+      font-weight: 800;
+      border-color: var(--gold);
+    }
+
+    .mini-cards {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin: 8px 0;
+      justify-content: center;
+    }
+    .mini-card {
+      background: var(--card-bg);
+      color: var(--ink);
+      font-weight: 800;
+      font-size: 12px;
+      padding: 3px 6px;
+      border-radius: 5px;
+      direction: ltr;
+    }
+    .mini-card.red { color: var(--red); }
+
+    .loading-dot {
+      display: inline-block;
+      color: var(--gold);
+      font-size: 12px;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="brand-badge">♠</div>
+      <div>
+        <h1>العقل الخارق للتريكس الفردي — Grandmaster Trix AI</h1>
+        <small>محرك احتمالات رياضية بحتة • عداد أوراق واستنتاج فراغات • حل نهايات Exact MaxN • محاكاة مونت كارلو PIMC</small>
+      </div>
+    </div>
+    <div class="controls">
+      <select id="modeSelect" title="وضع اللعب">
+        <option value="play">🎮 العب ضد الذكاء الاصطناعي</option>
+        <option value="spectate">👁️ شاهد العقل الخارق يلعب ويدمر الخصوم</option>
+      </select>
+      <select id="oppSelect" title="قوة الخصوم">
+        <option value="grandmaster">خصوم: Grandmaster (أقوى مستوى)</option>
+        <option value="pro" selected>خصوم: Pro خبير قواعد</option>
+        <option value="intermediate">خصوم: لاعب عادي متوسط</option>
+      </select>
+      <button class="btn-gold" onclick="startNewGame()">مباراة جديدة</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- Left / Center Game Table -->
+    <section class="arena">
+      <div class="ribbon">
+        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+          <span class="pill gold" id="kingdomPill">المملكة 1 / 4</span>
+          <span class="pill" id="contractPill">الطلب: —</span>
+          <span class="pill" id="trickPill">اللفة: 0 / 13</span>
+          <span class="pill" id="doubledPill" style="display:none; background:rgba(239,68,68,0.22); color:#fca5a5;"></span>
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+          <button class="btn-emerald" id="analyzeBtn" onclick="requestCoach()">🧠 تحليل العقل الخارق</button>
+          <button id="spectateStepBtn" style="display:none;" onclick="spectateStep(false)">▶️ خطوة واحدة</button>
+          <button id="spectateRoundBtn" style="display:none;" class="btn-gold" onclick="spectateStep(true)">⏩ أكمل الجولة</button>
+          <button id="autoToggleBtn" style="display:none;" onclick="toggleAutoPlay()">⚡ تشغيل تلقائي</button>
+        </div>
+      </div>
+
+      <div class="table-grid">
+        <!-- North (Seat 2) -->
+        <div class="seat-box seat-north" id="seatBox2">
+          <div class="name" id="seatName2">الشمال</div>
+          <div class="scores">المجموع: <strong id="matchScore2">0</strong> | الجولة: <span id="roundScore2">0</span></div>
+          <div class="cards-left" id="cardsLeft2">13 ورقة</div>
+        </div>
+
+        <!-- East (Seat 1) -->
+        <div class="seat-box seat-east" id="seatBox1">
+          <div class="name" id="seatName1">الشرق</div>
+          <div class="scores">المجموع: <strong id="matchScore1">0</strong> | الجولة: <span id="roundScore1">0</span></div>
+          <div class="cards-left" id="cardsLeft1">13 ورقة</div>
+        </div>
+
+        <!-- Center Playing Field -->
+        <div class="center-board" id="centerBoard">
+          <div style="color:var(--muted);">جاري تجهيز الطاولة...</div>
+        </div>
+
+        <!-- West (Seat 3) -->
+        <div class="seat-box seat-west" id="seatBox3">
+          <div class="name" id="seatName3">الغرب</div>
+          <div class="scores">المجموع: <strong id="matchScore3">0</strong> | الجولة: <span id="roundScore3">0</span></div>
+          <div class="cards-left" id="cardsLeft3">13 ورقة</div>
+        </div>
+
+        <!-- South (Seat 0) -->
+        <div class="seat-box seat-south-info" id="seatBox0">
+          <div class="name" id="seatName0">أنت (الجنوب)</div>
+          <div class="scores">المجموع: <strong id="matchScore0">0</strong> | الجولة: <span id="roundScore0">0</span></div>
+          <div class="cards-left" id="cardsLeft0">13 ورقة</div>
+        </div>
+      </div>
+
+      <!-- South Hand -->
+      <div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; padding:0 4px;">
+          <span style="font-size:13px; font-weight:700; color:var(--gold);" id="handTitle">أوراقك (الجنوب)</span>
+          <span id="statusHint" style="font-size:12.5px; color:#a7f3d0;"></span>
+        </div>
+        <div class="hand-bar" id="handBar"></div>
+      </div>
+    </section>
+
+    <!-- Right Sidebar: Grandmaster Brain & Lab -->
+    <aside class="sidebar">
+      <!-- Panel 1: Brain Analysis -->
+      <div class="panel">
+        <h2>
+          <span>🧠 لوحة العقل الخارق (X-Ray)</span>
+          <span class="loading-dot" id="brainSpinner" style="display:none;">يحسب...</span>
+        </h2>
+        <div id="brainContent">
+          <div style="color:var(--muted); font-size:12.5px;">
+            اضغط على <strong>"تحليل العقل الخارق"</strong> في أي لحظة ليريك القيمة المتوقعة (EV)، ونسبة النجاة، وحساب أسوأ 20%، والفراغات المؤكدة عند الخصوم!
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel 2: Belief Tracker -->
+      <div class="panel">
+        <h2>📡 عداد الأوراق والاستنتاج الاحتمالي</h2>
+        <div id="beliefContent" style="font-size:12.5px; color:var(--muted);">
+          بانتظار بدء الجولة...
+        </div>
+      </div>
+
+      <!-- Panel 3: Lab (Torture Test + Live Benchmark + Log) -->
+      <div class="panel">
+        <div class="tabs">
+          <button class="tab-btn active" id="tabLabBtn" onclick="switchTab('lab')">🔥 اختبار الورق السيئ</button>
+          <button class="tab-btn" id="tabBenchBtn" onclick="switchTab('bench')">🏆 اختبار بطولة</button>
+          <button class="tab-btn" id="tabLogBtn" onclick="switchTab('log')">📜 السجل</button>
+        </div>
+
+        <div id="tabLab">
+          <p style="margin:0 0 8px; font-size:12px; color:var(--muted); line-height:1.5;">
+            يوزّع أسوأ ورقة كارثية من بين 200 توزيعة ويختبر على <strong>نفس الورق تماماً</strong> كيف ينجو العقل الخارق بأقل خسارة مقارنة باللاعب العادي والخبير!
+          </p>
+          <div style="display:flex; gap:6px; margin-bottom:8px;">
+            <select id="tortureContract" style="flex:1;">
+              <option value="king_of_hearts">شيخ الكبة (K♥)</option>
+              <option value="queens">البنات (Queens)</option>
+              <option value="diamonds">الديناري (♦)</option>
+              <option value="collections">اللطوش (Collections)</option>
+              <option value="trix">التريكس (Trix)</option>
+            </select>
+            <button class="btn-danger" id="tortureBtn" onclick="runTorture()">اختبر الآن</button>
+          </div>
+          <div id="tortureOutput"></div>
+        </div>
+
+        <div id="tabBench" style="display:none;">
+          <p style="margin:0 0 8px; font-size:12px; color:var(--muted); line-height:1.5;">
+            شغّل بطولة فورية كاملة (كل مباراة = 4 ممالك / 20 جولة) مباشرة من المتصفح لقياس نسبة الفوز بالأرقام:
+          </p>
+          <div style="display:flex; gap:6px; margin-bottom:8px;">
+            <select id="benchOpp" style="flex:1;">
+              <option value="intermediate">ضد 3 لاعبين متوسطين</option>
+              <option value="pro">ضد 3 خبراء قواعد (Pro)</option>
+            </select>
+            <button class="btn-gold" id="benchBtn" onclick="runQuickBench()">شغّل 4 مباريات</button>
+          </div>
+          <div id="benchOutput"></div>
+        </div>
+
+        <div id="tabLog" style="display:none;">
+          <div class="feed" id="eventFeed"></div>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <script>
+    let STATE = null;
+    let AUTO_TIMER = null;
+    let SELECTED_DOUBLES = new Set();
+
+    async function apiPost(url, payload) {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload || {})
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "API error");
+      return data;
+    }
+
+    function stopAuto() {
+      if (AUTO_TIMER) {
+        clearInterval(AUTO_TIMER);
+        AUTO_TIMER = null;
+      }
+      const btn = document.getElementById("autoToggleBtn");
+      if (btn) btn.textContent = "⚡ تشغيل تلقائي";
+    }
+
+    async function startNewGame() {
+      stopAuto();
+      SELECTED_DOUBLES.clear();
+      const mode = document.getElementById("modeSelect").value;
+      const opponent_level = document.getElementById("oppSelect").value;
+      STATE = await apiPost("/api/new_game", { mode, opponent_level, gm_level: "monster" });
+      renderAll();
+    }
+
+    async function selectContract(contract) {
+      STATE = await apiPost("/api/select_contract", { session_id: STATE.session_id, contract });
+      SELECTED_DOUBLES.clear();
+      renderAll();
+    }
+
+    function toggleDoubleCard(cardId) {
+      if (SELECTED_DOUBLES.has(cardId)) SELECTED_DOUBLES.delete(cardId);
+      else SELECTED_DOUBLES.add(cardId);
+      renderCenter();
+    }
+
+    async function submitDoubles() {
+      STATE = await apiPost("/api/submit_doubles", {
+        session_id: STATE.session_id,
+        cards: Array.from(SELECTED_DOUBLES)
+      });
+      SELECTED_DOUBLES.clear();
+      renderAll();
+    }
+
+    async function playAction(action) {
+      try {
+        STATE = await apiPost("/api/play", { session_id: STATE.session_id, action });
+        renderAll();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function nextRound() {
+      STATE = await apiPost("/api/next_round", { session_id: STATE.session_id });
+      renderAll();
+    }
+
+    async function spectateStep(fullRound) {
+      if (!STATE || STATE.mode !== "spectate") return;
+      document.getElementById("brainSpinner").style.display = "inline-block";
+      try {
+        STATE = await apiPost("/api/spectate_step", {
+          session_id: STATE.session_id,
+          full_round: fullRound
+        });
+        renderAll();
+        if (STATE.phase === "match_over") stopAuto();
+      } finally {
+        document.getElementById("brainSpinner").style.display = "none";
+      }
+    }
+
+    function toggleAutoPlay() {
+      if (AUTO_TIMER) {
+        stopAuto();
+        return;
+      }
+      document.getElementById("autoToggleBtn").textContent = "⏸️ إيقاف مؤقت";
+      AUTO_TIMER = setInterval(async () => {
+        if (!STATE || STATE.phase === "match_over") {
+          stopAuto();
+          return;
+        }
+        await spectateStep(false);
+      }, 650);
+    }
+
+    async function requestCoach() {
+      if (!STATE) return;
+      document.getElementById("brainSpinner").style.display = "inline-block";
+      document.getElementById("analyzeBtn").disabled = true;
+      try {
+        STATE = await apiPost("/api/analyze", { session_id: STATE.session_id });
+        renderAll();
+      } finally {
+        document.getElementById("brainSpinner").style.display = "none";
+        document.getElementById("analyzeBtn").disabled = false;
+      }
+    }
+
+    function makeCardHTML(c, extraClass = "", onClickAttr = "") {
+      return `
+        <div class="card ${c.red ? "red" : ""} ${extraClass}" ${onClickAttr}>
+          <div class="corner">${c.rank_str}<br>${c.suit_symbol}</div>
+          <div class="pip">${c.suit_symbol}</div>
+        </div>
+      `;
+    }
+
+    function renderAll() {
+      if (!STATE) return;
+      const isSpec = STATE.mode === "spectate";
+      document.getElementById("spectateStepBtn").style.display = isSpec ? "inline-block" : "none";
+      document.getElementById("spectateRoundBtn").style.display = isSpec ? "inline-block" : "none";
+      document.getElementById("autoToggleBtn").style.display = isSpec ? "inline-block" : "none";
+      document.getElementById("handTitle").textContent = isSpec
+        ? "أوراق العقل الخارق (GrandmasterAI — الجنوب)"
+        : "أوراقك (الجنوب)";
+
+      // Ribbon
+      document.getElementById("kingdomPill").textContent =
+        STATE.kingdom_index < 4 ? `المملكة ${STATE.kingdom_index + 1} / 4` : "انتهت المباراة!";
+      const rnd = STATE.round;
+      document.getElementById("contractPill").textContent = rnd
+        ? `الطلب: ${rnd.contract_ar}`
+        : "الطلب: اختيار الملك";
+      document.getElementById("trickPill").textContent = rnd
+        ? (rnd.contract === "trix"
+            ? `أنهى: ${rnd.trix_finish_order.length} / 4`
+            : `اللفة: ${rnd.trick_number} / 13`)
+        : "اللفة: —";
+
+      const dblEl = document.getElementById("doubledPill");
+      if (rnd && rnd.doubled_cards && rnd.doubled_cards.length > 0) {
+        dblEl.style.display = "inline-flex";
+        dblEl.textContent = "🔥 مدبّل: " + rnd.doubled_cards.map(d => d.card.label).join(" ، ");
+      } else {
+        dblEl.style.display = "none";
+      }
+
+      // Seats
+      for (let s = 0; s < 4; s++) {
+        const crown = STATE.current_king === s ? "👑 " : "";
+        document.getElementById(`seatName${s}`).textContent = crown + STATE.seat_labels[s];
+        document.getElementById(`matchScore${s}`).textContent = STATE.match_scores[s];
+        document.getElementById(`roundScore${s}`).textContent = rnd ? rnd.round_scores[s] : 0;
+        document.getElementById(`cardsLeft${s}`).textContent = `${STATE.hand_counts[s]} ورقة`;
+        const box = document.getElementById(`seatBox${s}`);
+        const isTurn = STATE.phase === "play" && rnd && rnd.current_player === s;
+        box.classList.toggle("active-turn", !!isTurn);
+      }
+
+      renderCenter();
+      renderHand();
+      renderBrain();
+      renderBelief();
+      renderFeed();
+    }
+
+    function renderCenter() {
+      const el = document.getElementById("centerBoard");
+      const ph = STATE.phase;
+      const rnd = STATE.round;
+
+      if (ph === "match_over" && STATE.rankings) {
+        const rows = STATE.rankings.map(r => `
+          <tr class="${r.seat === 0 ? "best-row" : ""}">
+            <td>#${r.place}</td>
+            <td>${r.label}</td>
+            <td><strong>${r.score}</strong></td>
+          </tr>
+        `).join("");
+        el.innerHTML = `
+          <div class="phase-card">
+            <h3>🏆 انتهت المباراة الكاملة (4 ممالك — 20 جولة)</h3>
+            <table>
+              <thead><tr><th>المركز</th><th>اللاعب</th><th>المجموع النهائي</th></tr></thead>
+              <tbody>${rows}</tbody>
+            </table>
+            <div class="btn-grid">
+              <button class="btn-gold" onclick="startNewGame()">العب مباراة جديدة</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      if (ph === "round_summary" && STATE.last_round_summary) {
+        const rs = STATE.last_round_summary;
+        const rows = [0, 1, 2, 3].map(s => `
+          <tr class="${s === 0 ? "best-row" : ""}">
+            <td>${STATE.seat_labels[s]}</td>
+            <td>${rs.round_scores[s] >= 0 ? "+" + rs.round_scores[s] : rs.round_scores[s]}</td>
+            <td><strong>${rs.cumulative_scores[s]}</strong></td>
+          </tr>
+        `).join("");
+        el.innerHTML = `
+          <div class="phase-card">
+            <h3>🏁 نهاية جولة: ${rs.contract_ar}</h3>
+            <table>
+              <thead><tr><th>اللاعب</th><th>نقاط الجولة</th><th>المجموع</th></tr></thead>
+              <tbody>${rows}</tbody>
+            </table>
+            <div class="btn-grid">
+              <button class="btn-gold" onclick="nextRound()">الجولة التالية ⬅️</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      if (ph === "choose_contract") {
+        if (STATE.mode === "play" && STATE.current_king === 0) {
+          const btns = STATE.remaining_contracts.map(c =>
+            `<button class="btn-gold" onclick="selectContract('${c.id}')">${c.ar}</button>`
+          ).join("");
+          el.innerHTML = `
+            <div class="phase-card">
+              <h3>👑 مملكتك! اختر الطلب لهذه الجولة</h3>
+              <p style="font-size:12.5px; color:var(--muted); margin:0 0 8px;">
+                يمكنك الضغط على "تحليل العقل الخارق" لرؤية أفضل طلب رياضياً بناءً على أوراقك الـ 13!
+              </p>
+              <div class="btn-grid">${btns}</div>
+            </div>
+          `;
+        } else {
+          el.innerHTML = `
+            <div class="phase-card">
+              <h3>👑 ${STATE.seat_labels[STATE.current_king]} يختار الطلب...</h3>
+              <div class="btn-grid">
+                <button class="btn-gold" onclick="spectateStep(false)">متابعة ▶️</button>
+              </div>
+            </div>
+          `;
+        }
+        return;
+      }
+
+      if (ph === "double" && rnd) {
+        const cands = rnd.double_candidates || [];
+        const btns = cands.map(c => {
+          const active = SELECTED_DOUBLES.has(c.id);
+          return `<button class="${active ? "btn-danger" : ""}" onclick="toggleDoubleCard(${c.id})">
+            ${active ? "✅ مدبّل: " : "دبّل "}${c.label}
+          </button>`;
+        }).join("");
+        el.innerHTML = `
+          <div class="phase-card">
+            <h3>🔥 مرحلة التدبيل (${rnd.contract_ar})</h3>
+            <p style="font-size:12.5px; color:var(--muted); margin:0 0 8px;">
+              اختر الأوراق التي تريد تدبيلها أو اضغط متابعة بدون تدبيل (جرب "تحليل العقل الخارق" لحساب احتمال الأكل الدقيق!).
+            </p>
+            <div class="btn-grid">${btns}</div>
+            <div class="btn-grid" style="margin-top:14px;">
+              <button class="btn-gold" onclick="submitDoubles()">تأكيد وبدء اللعب ▶️</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // Play phase
+      if (!rnd) return;
+
+      if (rnd.contract === "trix") {
+        const suitOrder = [3, 2, 0, 1];
+        const suitSym = ["♣", "♦", "♥", "♠"];
+        const ranks = ["2","3","4","5","6","7","8","9","10","J","Q","K","A"];
+        const rows = suitOrder.map(s => {
+          const lo = rnd.layout_low[s];
+          const hi = rnd.layout_high[s];
+          const isRed = (s === 1 || s === 2);
+          const cells = ranks.map((rk, r) => {
+            const isOpen = lo !== -1 && r >= lo && r <= hi;
+            return `<div class="trix-cell ${isOpen ? "open" : ""} ${isRed ? "red" : ""} ${r === 9 ? "anchor" : ""}">${rk}</div>`;
+          }).join("");
+          return `
+            <div class="trix-row">
+              <div class="trix-suit-tag" style="color:${isRed ? "#f87171" : "#e2e8f0"}">${suitSym[s]}</div>
+              <div class="trix-cells">${cells}</div>
+            </div>
+          `;
+        }).join("");
+
+        const passBtn = (STATE.mode === "play" && rnd.current_player === 0 && STATE.legal_actions.includes(-1))
+          ? `<button class="btn-gold" onclick="playAction(-1)">⏭️ تمرير إجباري (Pass)</button>`
+          : "";
+
+        el.innerHTML = `<div class="trix-tracks">${rows}</div>${passBtn}`;
+        return;
+      }
+
+      // Trick-taking center display
+      const trickToShow = rnd.current_trick.length > 0
+        ? rnd.current_trick
+        : (STATE.last_trick_flash ? STATE.last_trick_flash.plays : []);
+      const slotMap = { 0: "", 1: "", 2: "", 3: "" };
+      for (const play of trickToShow) {
+        slotMap[play.seat] = makeCardHTML(play.card);
+      }
+      const flashMsg = (rnd.current_trick.length === 0 && STATE.last_trick_flash)
+        ? `<div style="font-size:12px; color:var(--gold); font-weight:700;">آخر لطشة أخذها: ${STATE.last_trick_flash.winner_label}</div>`
+        : "";
+      el.innerHTML = `
+        <div class="trick-diamond">
+          <div class="slot-2">${slotMap[2]}</div>
+          <div class="slot-1">${slotMap[1]}</div>
+          <div class="slot-3">${slotMap[3]}</div>
+          <div class="slot-0">${slotMap[0]}</div>
+        </div>
+        ${flashMsg}
+      `;
+    }
+
+    function renderHand() {
+      const bar = document.getElementById("handBar");
+      const hint = document.getElementById("statusHint");
+      const legalSet = new Set(STATE.legal_actions || []);
+      const isHumanTurn = STATE.mode === "play" && STATE.phase === "play" && STATE.round && STATE.round.current_player === 0;
+      const recCard = STATE.last_analysis && STATE.last_analysis.best_action !== -1
+        ? STATE.last_analysis.best_action
+        : null;
+
+      if (isHumanTurn) {
+        hint.textContent = legalSet.has(-1)
+          ? "لا توجد ورقة متاحة — اضغط تمرير (Pass)"
+          : "دورك الآن! اختر ورقة للعب";
+      } else if (STATE.phase === "choose_contract" && STATE.current_king === 0 && STATE.mode === "play") {
+        hint.textContent = "اختر طلب مملكتك من الطاولة";
+      } else if (STATE.mode === "spectate") {
+        hint.textContent = "وضع المشاهدة الحي — استخدم أزرار الخطوة أو التشغيل التلقائي";
+      } else {
+        hint.textContent = "";
+      }
+
+      bar.innerHTML = STATE.my_hand.map(c => {
+        const isLegal = isHumanTurn && legalSet.has(c.id);
+        const isRec = recCard === c.id;
+        let cls = "";
+        let click = "";
+        if (isHumanTurn) {
+          cls = isLegal ? "playable" : "dimmed";
+          if (isLegal) click = `onclick="playAction(${c.id})"`;
+        }
+        if (isRec) cls += " recommended";
+        return makeCardHTML(c, cls, click);
+      }).join("");
+    }
+
+    function renderBrain() {
+      const el = document.getElementById("brainContent");
+      if (STATE.last_contract_analysis && STATE.phase === "choose_contract") {
+        const rows = STATE.last_contract_analysis.map((r, i) => `
+          <tr class="${i === 0 ? "best-row" : ""}">
+            <td>${i === 0 ? "★ " : ""}${r.contract_ar}</td>
+            <td>${r.expected_score >= 0 ? "+" + r.expected_score : r.expected_score}</td>
+            <td>${r.surplus_vs_baseline >= 0 ? "+" + r.surplus_vs_baseline : r.surplus_vs_baseline}</td>
+            <td><strong>${r.option_adjusted_value >= 0 ? "+" + r.option_adjusted_value : r.option_adjusted_value}</strong></td>
+          </tr>
+        `).join("");
+        el.innerHTML = `
+          <div class="explain-box">
+            <strong>أفضل طلب رياضي ليدك:</strong> ${STATE.last_contract_analysis[0].contract_ar}
+            (يحقق أعلى فائض متوقع مقارنة بمتوسط الطلبات المتبقية).
+          </div>
+          <table>
+            <thead><tr><th>الطلب</th><th>المتوقع</th><th>الفائض</th><th>القيمة المثلى</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        `;
+        return;
+      }
+
+      if (STATE.last_double_analysis && STATE.phase === "double") {
+        const rows = STATE.last_double_analysis.map(d => `
+          <tr class="${d.recommend_double ? "best-row" : ""}">
+            <td>${d.card_ar}</td>
+            <td>${(d.p_eat * 100).toFixed(1)}%</td>
+            <td>${d.ev_gain >= 0 ? "+" + d.ev_gain : d.ev_gain}</td>
+            <td>${d.recommend_double ? "✅ دبّل" : "❌ لا تدبّل"}</td>
+          </tr>
+        `).join("");
+        el.innerHTML = `
+          <div class="explain-box">تحليل التدبيل الرياضي (بافتراض كشف الورقة ومطاردة الخصوم لها):</div>
+          <table>
+            <thead><tr><th>الورقة</th><th>احتمال أكلها</th><th>ربح EV</th><th>القرار</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        `;
+        return;
+      }
+
+      if (STATE.last_analysis) {
+        const a = STATE.last_analysis;
+        const rows = a.evaluations.map((ev, i) => `
+          <tr class="${i === 0 ? "best-row" : ""}">
+            <td style="direction:ltr;">${i === 0 ? "★ " : ""}${ev.card ? ev.card.label : "PASS"}</td>
+            <td>${ev.ev_own >= 0 ? "+" + ev.ev_own : ev.ev_own}</td>
+            <td>${ev.cvar20 >= 0 ? "+" + ev.cvar20 : ev.cvar20}</td>
+            <td>${ev.safe_pct}%</td>
+          </tr>
+        `).join("");
+        el.innerHTML = `
+          <div class="pill gold" style="margin-bottom:8px;">${a.mode_ar}</div>
+          <div class="explain-box">${a.explanation_ar}</div>
+          <table>
+            <thead><tr><th>الورقة</th><th>المتوقع EV</th><th>أسوأ 20%</th><th>النجاة</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        `;
+        return;
+      }
+
+      el.innerHTML = `<div style="color:var(--muted); font-size:12.5px;">اضغط على <strong>"تحليل العقل الخارق"</strong> لعرض حساب الاحتمالات الدقيق لكل ورقة متاحة!</div>`;
+    }
+
+    function renderBelief() {
+      const el = document.getElementById("beliefContent");
+      const b = STATE.belief_live;
+      if (!b) {
+        el.innerHTML = `<span style="color:var(--muted);">يبدأ تتبع الفراغات والاحتمالات فور بدء اللعب.</span>`;
+        return;
+      }
+      let html = `<div style="margin-bottom:6px;">التوزيعات المتسقة الممكنة: <strong style="color:var(--gold);">${Number(b.total_worlds).toLocaleString()}</strong></div>`;
+
+      // Voids
+      const voidChips = [];
+      for (const [seat, suits] of Object.entries(b.void_suits || {})) {
+        if (suits.length > 0) {
+          const sTxt = suits.map(x => `${x.symbol} ${x.ar}`).join(" ، ");
+          voidChips.push(`<span class="belief-chip">🚫 ${STATE.seat_labels[Number(seat)]}: مقطوع من ${sTxt}</span>`);
+        }
+      }
+      html += voidChips.length
+        ? `<div style="margin-bottom:6px;">${voidChips.join("")}</div>`
+        : `<div style="font-size:12px; color:var(--muted); margin-bottom:6px;">لم تُكشف فراغات (مقطوعات) بعد.</div>`;
+
+      // Key card probabilities
+      if (b.key_card_probs && b.key_card_probs.length > 0) {
+        html += `<div style="margin-top:6px; font-weight:700; color:var(--text); margin-bottom:4px;">احتمال موقع الأوراق الخطرة (حساب رياضي دقيق):</div>`;
+        for (const kp of b.key_card_probs) {
+          const parts = [1, 2, 3].map(s => `${STATE.seat_labels[s].split(" ")[0]}: <strong>${kp.probs[String(s)]}%</strong>`);
+          html += `<div class="belief-chip" style="display:block; margin-bottom:4px;">${kp.card.label} ⟵ ${parts.join(" | ")}</div>`;
+        }
+      }
+
+      // Proven cards
+      const provLines = [];
+      for (const [seat, cards] of Object.entries(b.proven_cards || {})) {
+        if (cards.length > 0) {
+          provLines.push(`<span class="belief-chip" style="border-color:var(--gold);">🔒 ${STATE.seat_labels[Number(seat)]} يملك يقيناً: ${cards.map(c => c.label).join(" ")}</span>`);
+        }
+      }
+      if (provLines.length) html += `<div style="margin-top:6px;">${provLines.join("")}</div>`;
+
+      el.innerHTML = html;
+    }
+
+    function renderFeed() {
+      const el = document.getElementById("eventFeed");
+      el.innerHTML = (STATE.event_feed || []).slice().reverse().map(m => `<div>${m}</div>`).join("");
+    }
+
+    function switchTab(tab) {
+      document.getElementById("tabLab").style.display = tab === "lab" ? "block" : "none";
+      document.getElementById("tabBench").style.display = tab === "bench" ? "block" : "none";
+      document.getElementById("tabLog").style.display = tab === "log" ? "block" : "none";
+      document.getElementById("tabLabBtn").classList.toggle("active", tab === "lab");
+      document.getElementById("tabBenchBtn").classList.toggle("active", tab === "bench");
+      document.getElementById("tabLogBtn").classList.toggle("active", tab === "log");
+    }
+
+    async function runTorture() {
+      const btn = document.getElementById("tortureBtn");
+      const out = document.getElementById("tortureOutput");
+      const contract = document.getElementById("tortureContract").value;
+      btn.disabled = true;
+      out.innerHTML = `<div style="color:var(--gold); font-size:12px;">جاري توليد أسوأ يد من 200 توزيعة ومحاكاتها...</div>`;
+      try {
+        const res = await apiPost("/api/torture_test", { contract });
+        const handHtml = res.nightmare_hand.map(c => `<span class="mini-card ${c.red ? "red" : ""}">${c.label}</span>`).join("");
+        const bestScore = Math.max(...res.comparison.map(x => x.seat0_score));
+        const rows = res.comparison.map(x => `
+          <tr class="${x.seat0_score === bestScore ? "best-row" : ""}">
+            <td>${x.agent}</td>
+            <td><strong>${x.seat0_score >= 0 ? "+" + x.seat0_score : x.seat0_score}</strong></td>
+            <td>${x.elapsed_ms} ms</td>
+          </tr>
+        `).join("");
+        out.innerHTML = `
+          <div style="font-size:12px; color:#fca5a5; margin-bottom:4px;">
+            اليد الكارثية المختارة في <strong>${res.contract_ar}</strong> (درجة الصعوبة: ${res.hand_difficulty_score}):
+          </div>
+          <div class="mini-cards">${handHtml}</div>
+          <table>
+            <thead><tr><th>اللاعب على نفس اليد</th><th>النتيجة</th><th>الزمن</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        `;
+      } catch (e) {
+        out.innerHTML = `<div style="color:var(--danger); font-size:12px;">${e.message}</div>`;
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    async function runQuickBench() {
+      const btn = document.getElementById("benchBtn");
+      const out = document.getElementById("benchOutput");
+      const opp = document.getElementById("benchOpp").value;
+      btn.disabled = true;
+      out.innerHTML = `<div style="color:var(--gold); font-size:12px;">جاري لعب 4 مباريات كاملة (80 جولة)... انتظر ~12 ثانية</div>`;
+      try {
+        const s = await apiPost("/api/quick_benchmark", { opponent: opp, matches: 4 });
+        const cRows = Object.values(s.per_contract).map(pc => `
+          <tr>
+            <td>${pc.name_ar}</td>
+            <td>${pc.gm_avg >= 0 ? "+" + pc.gm_avg : pc.gm_avg}</td>
+            <td>${pc.opp_avg >= 0 ? "+" + pc.opp_avg : pc.opp_avg}</td>
+            <td style="color:${pc.edge >= 0 ? "#4ade80" : "#f87171"}"><strong>${pc.edge >= 0 ? "+" + pc.edge : pc.edge}</strong></td>
+          </tr>
+        `).join("");
+        out.innerHTML = `
+          <div class="explain-box">
+            🏆 نسبة الفوز بالمركز الأول: <strong>${s.win_rate_pct}%</strong> (الأساس 25%)<br>
+            🥈 نسبة المركز 1 أو 2: <strong>${s.top2_rate_pct}%</strong> | المركز الأخير: <strong>${s.last_place_pct}%</strong><br>
+            📊 متوسط الفارق: <strong>${s.avg_margin >= 0 ? "+" + s.avg_margin : s.avg_margin}</strong> نقطة/مباراة<br>
+            🔥 نجاح التدبيل: <strong>${s.double_stats.success}/${s.double_stats.attempts}</strong> (${s.double_stats.net_gain >= 0 ? "+" + s.double_stats.net_gain : s.double_stats.net_gain} نقطة)
+          </div>
+          <table>
+            <thead><tr><th>الطلب</th><th>الخارق</th><th>الخصوم</th><th>الأفضلية</th></tr></thead>
+            <tbody>${cRows}</tbody>
+          </table>
+        `;
+      } catch (e) {
+        out.innerHTML = `<div style="color:var(--danger); font-size:12px;">${e.message}</div>`;
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    // Boot
+    startNewGame();
+  </script>
+</body>
+</html>
